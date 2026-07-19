@@ -1,12 +1,10 @@
 // ============================================================
-// App.tsx — Main SerK3tOS Shell
+// App.tsx — Main AuraDesk Shell
 // ============================================================
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { OSProvider, useOS } from '@/hooks/useOSStore';
-import { IdentityProviderWrapper } from '@/hooks/useIdentity';
 import BootSequence from '@/components/BootSequence';
-import LoginScreen from '@/components/LoginScreen';
 import Desktop from '@/components/Desktop';
 import TopPanel from '@/components/TopPanel';
 import Dock from '@/components/Dock';
@@ -18,7 +16,7 @@ import NotificationCenter from '@/components/NotificationCenter';
 
 function AppShell() {
   const { state, dispatch } = useOS();
-  const { bootPhase, auth } = state;
+  const { bootPhase } = state;
   const [bootComplete, setBootComplete] = useState(false);
   const altTabRef = useRef<{ holding: boolean }>({ holding: false });
   const stateRef = useRef(state);
@@ -26,21 +24,6 @@ function AppShell() {
   useEffect(() => {
     stateRef.current = state;
   });
-
-  // One-time rename migration: ubuntuos_* → serk3tos_*
-  useEffect(() => {
-    const prefix = 'ubuntuos_';
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(prefix)) {
-        const newKey = 'serk3tos_' + key.slice(prefix.length);
-        if (!localStorage.getItem(newKey)) {
-          localStorage.setItem(newKey, localStorage.getItem(key)!);
-        }
-        localStorage.removeItem(key);
-      }
-    }
-  }, []);
 
   // Boot sequence
   useEffect(() => {
@@ -61,13 +44,6 @@ function AppShell() {
       if (e.key === 'Meta' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         e.preventDefault();
         dispatch({ type: 'TOGGLE_APP_LAUNCHER' });
-        return;
-      }
-
-      // Ctrl+Alt+T opens Terminal
-      if (e.ctrlKey && e.altKey && e.key === 't') {
-        e.preventDefault();
-        dispatch({ type: 'OPEN_WINDOW', appId: 'terminal', viewport: { width: window.innerWidth, height: window.innerHeight } });
         return;
       }
 
@@ -123,18 +99,13 @@ function AppShell() {
     };
   }, [dispatch]);
 
-  // Determine what to render
-  const showBoot = bootPhase !== 'complete' && !bootComplete;
-  const showLogin = bootComplete && !auth.isAuthenticated;
-  const showDesktop = bootComplete && auth.isAuthenticated;
+  // Direct to desktop after boot — no login gate
+  const showDesktop = bootComplete;
 
   return (
     <div className={state.theme.mode === 'light' ? 'light' : ''} style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
       {/* Boot Sequence */}
-      {showBoot && <BootSequence onComplete={handleBootComplete} />}
-
-      {/* Login Screen */}
-      {showLogin && <LoginScreen />}
+      {!bootComplete && <BootSequence onComplete={handleBootComplete} />}
 
       {/* Desktop Shell */}
       {showDesktop && (
@@ -199,20 +170,10 @@ function AppShell() {
                       >
                         <div className="w-12 h-12 rounded-xl flex items-center justify-center"
                           style={{ background: 'var(--bg-hover)' }}>
-                          {app?.icon && (
-                            <img
-                              src={`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%237C4DFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`}
-                              alt=""
-                              className="w-6 h-6 opacity-0"
-                            />
-                          )}
-                          <span className="text-xl absolute">{app?.icon === 'Folder' && '📁'}</span>
-                          <span className="text-xl absolute">{app?.icon === 'Terminal' && '⌨'}</span>
-                          <span className="text-xl absolute">{app?.icon === 'Globe' && '🌐'}</span>
-                          <span className="text-xl absolute">{app?.icon === 'Settings' && '⚙'}</span>
-                          <span className="text-xl absolute">{app?.icon === 'FileText' && '📄'}</span>
-                          <span className="text-xl absolute">
-                            {!['Folder', 'Terminal', 'Globe', 'Settings', 'FileText'].includes(app?.icon || '') && '📱'}
+                          <span className="text-2xl">
+                            {app?.icon === 'Monitor' && '🖥️'}
+                            {app?.icon === 'Music' && '🎵'}
+                            {!['Monitor', 'Music'].includes(app?.icon || '') && '📱'}
                           </span>
                         </div>
                         <span className="text-[10px] text-[var(--text-primary)] text-center truncate max-w-[64px]">
@@ -240,9 +201,7 @@ function AppShell() {
 export default function App() {
   return (
     <OSProvider>
-      <IdentityProviderWrapper>
-        <AppShell />
-      </IdentityProviderWrapper>
+      <AppShell />
     </OSProvider>
   );
 }

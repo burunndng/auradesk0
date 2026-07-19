@@ -37,13 +37,8 @@ const createWindow = (state: OSState, appId: string, title?: string, viewport?: 
 
 // ---- Initial State ----
 const defaultDesktopIcons: DesktopIcon[] = [
-  { id: 'desk-home', name: 'Home', icon: 'Home', appId: 'filemanager', position: { x: 16, y: 16 }, isSelected: false },
-  { id: 'desk-trash', name: 'Trash', icon: 'Trash2', appId: 'filemanager', position: { x: 16, y: 106 }, isSelected: false },
-  { id: 'desk-text', name: 'Text Editor', icon: 'FileText', appId: 'texteditor', position: { x: 16, y: 196 }, isSelected: false },
-  { id: 'desk-terminal', name: 'Terminal', icon: 'Terminal', appId: 'terminal', position: { x: 16, y: 286 }, isSelected: false },
-  { id: 'desk-settings', name: 'Settings', icon: 'Settings', appId: 'settings', position: { x: 96, y: 16 }, isSelected: false },
-  { id: 'desk-browser', name: 'Web Browser', icon: 'Globe', appId: 'browser', position: { x: 96, y: 106 }, isSelected: false },
-  { id: 'desk-calendar', name: 'Calendar', icon: 'Calendar', appId: 'calendar', position: { x: 96, y: 196 }, isSelected: false },
+  { id: 'desk-auraos', name: 'AuraOS', icon: 'Monitor', appId: 'auraos', position: { x: 16, y: 16 }, isSelected: false },
+  { id: 'desk-bliss', name: 'BLISS', icon: 'Music', appId: 'bliss', position: { x: 16, y: 106 }, isSelected: false },
 ];
 
 const createInitialDockItems = (): DockItem[] => {
@@ -119,6 +114,25 @@ function osReducer(state: OSState, action: OSAction): OSState {
     }
 
     case 'OPEN_WINDOW': {
+      const existing = state.windows.find((w) => w.appId === action.appId && w.state !== 'minimized');
+      if (existing) {
+        const app = getAppById(action.appId);
+        if (app?.singleton) {
+          const updatedWindows = state.windows.map((w) =>
+            w.id === existing.id ? { ...w, isFocused: true, zIndex: state.nextZIndex + 1, state: 'normal' as WindowState } : w
+          );
+          const updatedDock = state.dockItems.map((d) =>
+            d.appId === action.appId ? { ...d, isOpen: true, isFocused: true, bounce: true } : d
+          );
+          return {
+            ...state,
+            windows: updatedWindows,
+            activeWindowId: existing.id,
+            nextZIndex: state.nextZIndex + 1,
+            dockItems: updatedDock,
+          };
+        }
+      }
       const win = createWindow(state, action.appId, action.title, action.viewport);
       const newWindows = state.windows.map((w) => ({ ...w, isFocused: false }));
       const updatedDock = state.dockItems.map((d) =>

@@ -62,7 +62,7 @@ const Dock = memo(function Dock() {
   }, [dispatch]);
 
   const handleTrashClick = useCallback(() => {
-    dispatch({ type: 'OPEN_WINDOW', appId: 'filemanager', viewport: { width: window.innerWidth, height: window.innerHeight } });
+    dispatch({ type: 'OPEN_WINDOW', appId: 'auraos', viewport: { width: window.innerWidth, height: window.innerHeight } });
   }, [dispatch]);
 
   const pinnedItems = dockItems.filter((d) => d.isPinned);

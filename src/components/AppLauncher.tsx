@@ -14,7 +14,7 @@ const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
   return IconComp ? <IconComp {...props} /> : null;
 };
 
-const CATEGORIES = ['Favorites', 'All', 'System', 'Productivity', 'Internet', 'Media', 'Games', 'DevTools', 'Creative'];
+const CATEGORIES = ['Favorites', 'All', 'Practice', 'Audio'];
 
 const AppLauncher = memo(function AppLauncher() {
   const { state, dispatch } = useOS();

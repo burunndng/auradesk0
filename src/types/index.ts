@@ -36,7 +36,9 @@ export type AppCategory =
   | 'Media'
   | 'Games'
   | 'DevTools'
-  | 'Creative';
+  | 'Creative'
+  | 'Practice'
+  | 'Audio';
 
 export interface AppDefinition {
   id: string;
@@ -46,6 +48,7 @@ export interface AppDefinition {
   description: string;
   defaultSize: Size;
   minSize: Size;
+  singleton?: boolean;
   component?: string;
 }
 

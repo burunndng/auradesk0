@@ -121,7 +121,7 @@ const TopPanel = memo(function TopPanel() {
                   className="w-7 h-7 rounded flex items-center justify-center hover:bg-[var(--bg-hover)]"
                   onClick={() => {
                     setSysMenuOpen(false);
-                    dispatch({ type: 'OPEN_WINDOW', appId: 'settings', viewport: { width: window.innerWidth, height: window.innerHeight } });
+                    dispatch({ type: 'OPEN_WINDOW', appId: 'auraos', viewport: { width: window.innerWidth, height: window.innerHeight } });
                   }}
                 >
                   <span className="text-xs">⚙</span>

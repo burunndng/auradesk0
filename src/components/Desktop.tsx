@@ -82,12 +82,8 @@ const Desktop = memo(function Desktop() {
           { id: 'new-folder', label: 'New Folder', icon: 'FolderPlus', action: 'NEW_FOLDER' },
           { id: 'new-doc', label: 'New Document', icon: 'FilePlus', action: 'NEW_DOCUMENT' },
           { id: 'div1', label: '', action: '', divider: true },
-          { id: 'open-term', label: 'Open in Terminal', icon: 'Terminal', action: 'OPEN_APP:terminal' },
-          { id: 'div2', label: '', action: '', divider: true },
           { id: 'change-bg', label: 'Change Background', icon: 'Image', action: 'CHANGE_BG' },
           { id: 'arrange', label: 'Arrange Icons', icon: 'LayoutGrid', action: 'ARRANGE_ICONS' },
-          { id: 'div3', label: '', action: '', divider: true },
-          { id: 'display-settings', label: 'Display Settings', icon: 'Monitor', action: 'SHOW_SETTINGS' },
         ],
       });
     },
