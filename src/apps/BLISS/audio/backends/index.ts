@@ -7,4 +7,3 @@ export {
   getActiveBackendId,
 } from './registry';
 export { blissBackend } from './blissBackend';
-export { superSonicBackend, synthDefForVoice, buildNoteControls } from './superSonicBackend';
