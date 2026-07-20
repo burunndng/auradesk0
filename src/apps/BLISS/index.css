@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&family=JetBrains+Mono:ital,wght@0,100..900;1,100..900&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Outfit", sans-serif;
+}
+
+/* Custom scrollbar configurations for high aesthetic value */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+  border: 2px solid #09090b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Simple fade-in animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
+}
+
+.animate-spin-ambient {
+  animation: spinSlow 45s linear infinite;
+}
+
+/* DAW specific inputs */
+input[type="range"].daw-fader {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 24px;
+}
+
+input[type="range"].daw-fader::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #27272a;
+  border-radius: 2px;
+  border: 1px solid #18181b;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+
+input[type="range"].daw-fader::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 12px;
+  border-radius: 3px;
+  background: #e4e4e7;
+  margin-top: -8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.4);
+  border: 1px solid #09090b;
+  transition: background 0.1s;
+}
+
+input[type="range"].daw-fader:hover::-webkit-slider-thumb {
+  background: #ffffff;
+}
+
+input[type="range"].daw-fader:focus {
+  outline: none;
+}
+
+input[type="range"].daw-fader:disabled {
+  cursor: not-allowed;
+}
+input[type="range"].daw-fader:disabled::-webkit-slider-runnable-track {
+  background: #18181b;
+}
+input[type="range"].daw-fader:disabled::-webkit-slider-thumb {
+  background: #3f3f46;
+  box-shadow: none;
+  border-color: #27272a;
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-16 {
+    grid-template-columns: repeat(16, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

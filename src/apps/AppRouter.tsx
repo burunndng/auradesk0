@@ -6,8 +6,8 @@ import { lazy, type FC } from 'react';
 import NotImplemented from '@/components/NotImplemented';
 
 // The two apps
-const AuraOS = lazy(() => import('./AuraOS'));
-const BLISS = lazy(() => import('./BLISS'));
+const AuraOS = lazy(() => import('./AuraOS/Entry'));
+const BLISS = lazy(() => import('./BLISS/Entry'));
 
 interface AppRouterProps {
   appId: string;
@@ -17,9 +17,9 @@ interface AppRouterProps {
 const AppRouter: FC<AppRouterProps> = ({ appId, windowId }) => {
   switch (appId) {
     case 'auraos':
-      return <AuraOS windowId={windowId} />;
+      return (AuraOS as any)({ windowId });
     case 'bliss':
-      return <BLISS windowId={windowId} />;
+      return (BLISS as any)({ windowId });
     default:
       return <NotImplemented appId={appId} />;
   }
