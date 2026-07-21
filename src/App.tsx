@@ -108,8 +108,8 @@ function AppShell() {
           {/* Live neural-core wallpaper layer */}
           <NeuralCoreBackground />
 
-          {/* Vignette over wallpaper */}
-          <div className="absolute inset-0 overlay-vignette pointer-events-none" style={{ zIndex: 1 }} />
+          {/* Subtle vignette over wallpaper */}
+          <div className="absolute inset-0 overlay-vignette pointer-events-none" style={{ zIndex: 1, opacity: 0.55 }} />
 
           {/* Desktop Icons layer */}
           <Desktop />

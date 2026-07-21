@@ -1,6 +1,6 @@
 import { useMemo, useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 
 const VIOLET = new THREE.Color(0x805cff);
@@ -8,19 +8,21 @@ const CYAN = new THREE.Color(0x57f6e1);
 const CRIMSON = new THREE.Color(0xff315b);
 
 const obsidian = new THREE.MeshPhysicalMaterial({
-  color: 0x0a0713,
-  metalness: 0.9,
-  roughness: 0.16,
+  color: 0x1a1330,
+  metalness: 0.85,
+  roughness: 0.3,
   clearcoat: 1,
-  clearcoatRoughness: 0.08,
+  clearcoatRoughness: 0.12,
+  emissive: 0x0a0618,
+  emissiveIntensity: 0.5,
 });
 
 const edge = new THREE.MeshStandardMaterial({
-  color: 0x6c4dce,
-  emissive: 0x321b8e,
-  emissiveIntensity: 2,
+  color: 0x9c8aff,
+  emissive: 0x6245d9,
+  emissiveIntensity: 3,
   metalness: 0.35,
-  roughness: 0.32,
+  roughness: 0.3,
 });
 
 function Core() {
@@ -41,7 +43,7 @@ function Core() {
     }
     if (ring1.current) ring1.current.rotation.z = t * 0.32;
     if (ring2.current) ring2.current.rotation.z = -t * 0.22;
-    if (coreLight.current) coreLight.current.intensity = 14 + Math.sin(t * 3) * 4;
+    if (coreLight.current) coreLight.current.intensity = 22 + Math.sin(t * 3) * 6;
   });
 
   return (
@@ -72,16 +74,16 @@ function Core() {
       {/* Wireframe core */}
       <mesh position={[0, 1.4, 0]}>
         <icosahedronGeometry args={[0.78, 0]} />
-        <meshStandardMaterial color={0x8f6bff} emissive={0x5424dc} emissiveIntensity={3} wireframe />
+        <meshStandardMaterial color={0x9c8aff} emissive={0x805cff} emissiveIntensity={5} wireframe />
       </mesh>
 
       {/* Inner solid core */}
       <mesh ref={inner} position={[0, 1.4, 0]}>
         <icosahedronGeometry args={[0.42, 0]} />
-        <meshStandardMaterial color={0xffffff} emissive={0x8a2be2} emissiveIntensity={4} />
+        <meshStandardMaterial color={0xffffff} emissive={0xb495ff} emissiveIntensity={6} />
       </mesh>
 
-      <pointLight ref={coreLight} color={0x7146ff} intensity={15} distance={8} decay={2} position={[0, 1.4, 0]} />
+      <pointLight ref={coreLight} color={0x9c8aff} intensity={22} distance={10} decay={2} position={[0, 1.4, 0]} />
 
       {/* Rings around core */}
       <mesh ref={ring1} position={[0, 1.4, 0]} rotation={[Math.PI / 2, 0, 0]}>
@@ -207,8 +209,8 @@ function OrbitingLights() {
   });
   return (
     <>
-      <pointLight ref={cyan} color={CYAN} intensity={24} distance={12} decay={2} />
-      <pointLight ref={crimson} color={CRIMSON} intensity={14} distance={10} decay={2} />
+      <pointLight ref={cyan} color={CYAN} intensity={32} distance={14} decay={2} />
+      <pointLight ref={crimson} color={CRIMSON} intensity={22} distance={12} decay={2} />
     </>
   );
 }
@@ -228,10 +230,11 @@ function Scene() {
 
   return (
     <>
-      <fogExp2 attach="fog" args={[0x030207, 0.055]} />
-      <ambientLight intensity={0.4} color={0x332050} />
+      <fogExp2 attach="fog" args={[0x070414, 0.022]} />
+      <ambientLight intensity={0.8} color={0x4a3a7a} />
+      <hemisphereLight args={[0x6a4dff, 0x0a0713, 0.6]} />
       <OrbitingLights />
-      <directionalLight position={[-5, 8, 5]} intensity={0.4} color={0x222233} />
+      <directionalLight position={[-5, 8, 5]} intensity={1.1} color={0x6a5a9a} />
 
       <group ref={root}>
         <Core />
@@ -243,12 +246,11 @@ function Scene() {
       {/* reflective floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.4, 0]}>
         <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color={0x030208} metalness={0.75} roughness={0.25} />
+        <meshStandardMaterial color={0x0a0716} metalness={0.5} roughness={0.45} />
       </mesh>
 
       <EffectComposer>
-        <Bloom intensity={1.15} luminanceThreshold={0.28} luminanceSmoothing={0.5} mipmapBlur radius={0.7} />
-        <Vignette eskil={false} offset={0.15} darkness={0.95} />
+        <Bloom intensity={1.4} luminanceThreshold={0.08} luminanceSmoothing={0.6} mipmapBlur radius={0.8} />
       </EffectComposer>
     </>
   );
@@ -258,17 +260,18 @@ export default function NeuralCoreBackground() {
   return (
     <div className="absolute inset-0" style={{ zIndex: 0 }}>
       <Canvas
-        camera={{ position: [7, 4.5, 10], fov: 42, near: 0.1, far: 100 }}
+        camera={{ position: [4.2, 2.6, 6.4], fov: 46, near: 0.1, far: 100 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
-        style={{ background: '#030207' }}
+        style={{ background: '#070414' }}
+        onCreated={({ camera }) => camera.lookAt(0, 0.9, 0)}
       >
         <Suspense fallback={null}>
           <Scene />
         </Suspense>
       </Canvas>
-      {/* CRT scanlines + grain over the canvas */}
-      <div className="absolute inset-0 overlay-scanlines pointer-events-none" style={{ opacity: 0.4 }} />
+      {/* subtle CRT scanlines over the canvas */}
+      <div className="absolute inset-0 overlay-scanlines pointer-events-none" style={{ opacity: 0.18 }} />
     </div>
   );
 }
