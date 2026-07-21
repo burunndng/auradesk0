@@ -73,21 +73,8 @@ const Desktop = memo(function Desktop() {
   const handleDesktopContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      dispatch({
-        type: 'SHOW_CONTEXT_MENU',
-        x: e.clientX,
-        y: e.clientY,
-        menuType: 'desktop',
-        items: [
-          { id: 'new-folder', label: 'New Folder', icon: 'FolderPlus', action: 'NEW_FOLDER' },
-          { id: 'new-doc', label: 'New Document', icon: 'FilePlus', action: 'NEW_DOCUMENT' },
-          { id: 'div1', label: '', action: '', divider: true },
-          { id: 'change-bg', label: 'Change Background', icon: 'Image', action: 'CHANGE_BG' },
-          { id: 'arrange', label: 'Arrange Icons', icon: 'LayoutGrid', action: 'ARRANGE_ICONS' },
-        ],
-      });
     },
-    [dispatch]
+    []
   );
 
   return (
@@ -122,22 +109,7 @@ const Desktop = memo(function Desktop() {
           onMouseDown={(e) => handleIconMouseDown(e, icon)}
           onContextMenu={(e) => {
             e.stopPropagation();
-            dispatch({
-              type: 'SHOW_CONTEXT_MENU',
-              x: e.clientX,
-              y: e.clientY,
-              menuType: 'file',
-              items: [
-                { id: 'open', label: 'Open', icon: 'ExternalLink', action: `OPEN_APP:${icon.appId}` },
-                { id: 'div1', label: '', action: '', divider: true },
-                { id: 'cut', label: 'Cut', icon: 'Scissors', action: 'CUT' },
-                { id: 'copy', label: 'Copy', icon: 'Copy', action: 'COPY' },
-                { id: 'rename', label: 'Rename', icon: 'Edit', action: 'RENAME' },
-                { id: 'div2', label: '', action: '', divider: true },
-                { id: 'trash', label: 'Move to Trash', icon: 'Trash2', action: 'TRASH' },
-              ],
-              contextData: { iconId: icon.id },
-            });
+            e.preventDefault();
           }}
         >
           <div

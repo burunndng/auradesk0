@@ -3,26 +3,19 @@
 // ============================================================
 
 import { lazy, type FC } from 'react';
+import { getAppById } from '@/apps/registry';
+import AppFrame from '@/components/AppFrame';
 import NotImplemented from '@/components/NotImplemented';
 
-// The two apps
-const AuraOS = lazy(() => import('./AuraOS/Entry'));
-const BLISS = lazy(() => import('./BLISS/Entry'));
+const AppRouter: FC<{ appId: string; windowId: string }> = ({ appId }) => {
+  const app = getAppById(appId);
 
-interface AppRouterProps {
-  appId: string;
-  windowId: string;
-}
+  if (!app) return <NotImplemented appId={appId} />;
 
-const AppRouter: FC<AppRouterProps> = ({ appId, windowId }) => {
-  switch (appId) {
-    case 'auraos':
-      return (AuraOS as any)({ windowId });
-    case 'bliss':
-      return (BLISS as any)({ windowId });
-    default:
-      return <NotImplemented appId={appId} />;
-  }
+  // External / iframe apps render through the generic wrapper.
+  if (app.url) return <AppFrame app={app} />;
+
+  return <NotImplemented appId={appId} />;
 };
 
 export default AppRouter;

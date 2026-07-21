@@ -10,9 +10,6 @@ import TopPanel from '@/components/TopPanel';
 import Dock from '@/components/Dock';
 import AppLauncher from '@/components/AppLauncher';
 import WindowManager from '@/components/WindowManager';
-import ContextMenu from '@/components/ContextMenu';
-import NotificationSystem from '@/components/NotificationSystem';
-import NotificationCenter from '@/components/NotificationCenter';
 
 function AppShell() {
   const { state, dispatch } = useOS();
@@ -71,9 +68,6 @@ function AppShell() {
       if (e.key === 'Escape') {
         if (s.appLauncherOpen) {
           dispatch({ type: 'SET_APP_LAUNCHER', open: false });
-        }
-        if (s.notificationCenterOpen) {
-          dispatch({ type: 'TOGGLE_NOTIFICATION_CENTER' });
         }
       }
 
@@ -135,9 +129,6 @@ function AppShell() {
 
           {/* Overlays */}
           <AppLauncher />
-          <ContextMenu />
-          <NotificationSystem />
-          <NotificationCenter />
 
           {/* Alt+Tab switcher */}
           {state.isAltTabbing && (

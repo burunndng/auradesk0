@@ -33,10 +33,6 @@ const TopPanel = memo(function TopPanel() {
     dispatch({ type: 'TOGGLE_APP_LAUNCHER' });
   }, [dispatch]);
 
-  const handleClockClick = useCallback(() => {
-    dispatch({ type: 'TOGGLE_NOTIFICATION_CENTER' });
-  }, [dispatch]);
-
   const formattedTime = format(time, 'EEE h:mm a');
   const formattedDate = format(time, 'EEEE, MMMM d, yyyy');
 
@@ -63,16 +59,15 @@ const TopPanel = memo(function TopPanel() {
       </div>
 
       {/* Center: Clock */}
-      <button
-        onClick={handleClockClick}
-        className="absolute left-1/2 -translate-x-1/2 h-7 px-2 rounded hover:bg-[var(--bg-hover)] transition-colors text-xs font-medium group relative"
+      <div
+        className="absolute left-1/2 -translate-x-1/2 h-7 px-2 rounded text-xs font-medium group relative flex items-center"
       >
         <span>{formattedTime}</span>
         {/* Tooltip */}
         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 rounded bg-[var(--bg-tooltip)] text-[var(--text-primary)] text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[5000]">
           {formattedDate}
         </div>
-      </button>
+      </div>
 
       {/* Right: System tray */}
       <div className="flex items-center gap-1">

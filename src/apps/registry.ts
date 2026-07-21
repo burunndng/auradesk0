@@ -14,6 +14,8 @@ export const APP_REGISTRY: AppDefinition[] = [
     defaultSize: { width: 1024, height: 768 },
     minSize: { width: 640, height: 480 },
     singleton: true,
+    url: 'https://app.auraos.space',
+    embeddable: true,
   },
   {
     id: 'bliss',
@@ -24,6 +26,9 @@ export const APP_REGISTRY: AppDefinition[] = [
     defaultSize: { width: 1100, height: 700 },
     minSize: { width: 800, height: 500 },
     singleton: true,
+    url: 'https://bliss.auraos.space',
+    embeddable: true,
+    permissions: ['microphone', 'camera'],
   },
 ];
 

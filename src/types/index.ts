@@ -49,7 +49,10 @@ export interface AppDefinition {
   defaultSize: Size;
   minSize: Size;
   singleton?: boolean;
-  component?: string;
+  // External / iframe apps
+  url?: string;
+  embeddable?: boolean;
+  permissions?: string[];
 }
 
 // --------------------------------------------------------
@@ -107,27 +110,6 @@ export interface Theme {
 }
 
 // --------------------------------------------------------
-// Notifications
-// --------------------------------------------------------
-
-export interface Notification {
-  id: string;
-  appId: string;
-  appName: string;
-  appIcon: string;
-  title: string;
-  message: string;
-  timestamp: number;
-  isRead: boolean;
-  actions?: NotificationAction[];
-}
-
-export interface NotificationAction {
-  label: string;
-  action: string;
-}
-
-// --------------------------------------------------------
 // Dock
 // --------------------------------------------------------
 
@@ -137,34 +119,6 @@ export interface DockItem {
   isOpen: boolean;
   isFocused: boolean;
   bounce: boolean;
-}
-
-// --------------------------------------------------------
-// Context Menu
-// --------------------------------------------------------
-
-export type ContextMenuType = 'desktop' | 'file' | 'dockIcon' | 'windowTitle' | 'text';
-
-export interface ContextMenuItem {
-  id: string;
-  label: string;
-  icon?: string;
-  shortcut?: string;
-  action: string;
-  disabled?: boolean;
-  divider?: boolean;
-  submenu?: ContextMenuItem[];
-  toggle?: boolean;
-  toggled?: boolean;
-}
-
-export interface ContextMenuState {
-  visible: boolean;
-  x: number;
-  y: number;
-  type: ContextMenuType;
-  items: ContextMenuItem[];
-  contextData?: Record<string, unknown>;
 }
 
 // --------------------------------------------------------
@@ -190,11 +144,8 @@ export interface OSState {
   apps: AppDefinition[];
   desktopIcons: DesktopIcon[];
   theme: Theme;
-  notifications: Notification[];
   dockItems: DockItem[];
-  contextMenu: ContextMenuState;
   appLauncherOpen: boolean;
-  notificationCenterOpen: boolean;
   activeWindowId: string | null;
   nextZIndex: number;
   isAltTabbing: boolean;
@@ -220,11 +171,6 @@ export type OSAction =
   | { type: 'SET_ACTIVE_WINDOW'; windowId: string | null }
   | { type: 'TOGGLE_APP_LAUNCHER' }
   | { type: 'SET_APP_LAUNCHER'; open: boolean }
-  | { type: 'TOGGLE_NOTIFICATION_CENTER' }
-  | { type: 'ADD_NOTIFICATION'; notification: Omit<Notification, 'id' | 'timestamp'> }
-  | { type: 'REMOVE_NOTIFICATION'; id: string }
-  | { type: 'CLEAR_NOTIFICATIONS' }
-  | { type: 'MARK_NOTIFICATION_READ'; id: string }
   | { type: 'ADD_DESKTOP_ICON'; icon: Omit<DesktopIcon, 'id'> }
   | { type: 'REMOVE_DESKTOP_ICON'; id: string }
   | { type: 'UPDATE_DESKTOP_ICON_POSITION'; id: string; position: Position }
@@ -234,8 +180,6 @@ export type OSAction =
   | { type: 'PIN_DOCK_ITEM'; appId: string }
   | { type: 'UNPIN_DOCK_ITEM'; appId: string }
   | { type: 'BOUNCE_DOCK_ITEM'; appId: string }
-  | { type: 'SHOW_CONTEXT_MENU'; x: number; y: number; menuType: ContextMenuType; items: ContextMenuItem[]; contextData?: Record<string, unknown> }
-  | { type: 'HIDE_CONTEXT_MENU' }
   | { type: 'START_ALT_TAB' }
   | { type: 'CYCLE_ALT_TAB' }
   | { type: 'END_ALT_TAB' }

@@ -4,7 +4,7 @@
 
 import { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import type { Dispatch, ReactNode } from 'react';
-import type { OSState, OSAction, Window, DesktopIcon, Notification, DockItem, WindowState } from '@/types';
+import type { OSState, OSAction, Window, DesktopIcon, DockItem, WindowState } from '@/types';
 import { APP_REGISTRY, getAppById, getDefaultDockApps } from '@/apps/registry';
 
 // ---- Helpers ----
@@ -71,17 +71,8 @@ const initialState: OSState = {
     accent: '#7C4DFF',
     wallpaper: '/wallpaper-default.jpg',
   },
-  notifications: [],
   dockItems: createInitialDockItems(),
-  contextMenu: {
-    visible: false,
-    x: 0,
-    y: 0,
-    type: 'desktop',
-    items: [],
-  },
   appLauncherOpen: false,
-  notificationCenterOpen: false,
   activeWindowId: null,
   nextZIndex: 100,
   isAltTabbing: false,
@@ -279,37 +270,6 @@ function osReducer(state: OSState, action: OSAction): OSState {
       return { ...state, appLauncherOpen: action.open };
     }
 
-    case 'TOGGLE_NOTIFICATION_CENTER': {
-      return { ...state, notificationCenterOpen: !state.notificationCenterOpen };
-    }
-
-    case 'ADD_NOTIFICATION': {
-      const notif: Notification = {
-        ...action.notification,
-        id: generateId(),
-        timestamp: Date.now(),
-        isRead: false,
-      };
-      return { ...state, notifications: [notif, ...state.notifications].slice(0, 50) };
-    }
-
-    case 'REMOVE_NOTIFICATION': {
-      return { ...state, notifications: state.notifications.filter((n) => n.id !== action.id) };
-    }
-
-    case 'CLEAR_NOTIFICATIONS': {
-      return { ...state, notifications: [] };
-    }
-
-    case 'MARK_NOTIFICATION_READ': {
-      return {
-        ...state,
-        notifications: state.notifications.map((n) =>
-          n.id === action.id ? { ...n, isRead: true } : n
-        ),
-      };
-    }
-
     case 'ADD_DESKTOP_ICON': {
       const icon: DesktopIcon = { ...action.icon, id: generateId() };
       return { ...state, desktopIcons: [...state.desktopIcons, icon] };
@@ -371,24 +331,6 @@ function osReducer(state: OSState, action: OSAction): OSState {
           d.appId === action.appId ? { ...d, bounce: false } : d
         ),
       };
-    }
-
-    case 'SHOW_CONTEXT_MENU': {
-      return {
-        ...state,
-        contextMenu: {
-          visible: true,
-          x: action.x,
-          y: action.y,
-          type: action.menuType,
-          items: action.items,
-          contextData: action.contextData,
-        },
-      };
-    }
-
-    case 'HIDE_CONTEXT_MENU': {
-      return { ...state, contextMenu: { ...state.contextMenu, visible: false } };
     }
 
     case 'START_ALT_TAB': {
@@ -504,18 +446,5 @@ export const useWindows = () => {
     moveWindow: useCallback((windowId: string, position: { x: number; y: number }) => dispatch({ type: 'MOVE_WINDOW', windowId, position }), [dispatch]),
     resizeWindow: useCallback((windowId: string, size: { width: number; height: number }) => dispatch({ type: 'RESIZE_WINDOW', windowId, size }), [dispatch]),
     activeWindowId: state.activeWindowId,
-  };
-};
-
-export const useNotifications = () => {
-  const { state, dispatch } = useOS();
-  return {
-    notifications: state.notifications,
-    addNotification: useCallback(
-      (n: Omit<Notification, 'id' | 'timestamp'>) => dispatch({ type: 'ADD_NOTIFICATION', notification: n }),
-      [dispatch]
-    ),
-    removeNotification: useCallback((id: string) => dispatch({ type: 'REMOVE_NOTIFICATION', id }), [dispatch]),
-    clearNotifications: useCallback(() => dispatch({ type: 'CLEAR_NOTIFICATIONS' }), [dispatch]),
   };
 };
