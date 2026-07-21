@@ -1,20 +1,20 @@
-// ============================================================
-// TopPanel — Activities button, clock, system tray
-// ============================================================
-
 import { useState, useEffect, useCallback, memo, useRef } from 'react';
 import { format } from 'date-fns';
-import { Wifi, Volume2, Battery, Power, Keyboard, Accessibility } from 'lucide-react';
+import { Power } from 'lucide-react';
 import { useOS } from '@/hooks/useOSStore';
 
 const TopPanel = memo(function TopPanel() {
   const { state, dispatch } = useOS();
   const [time, setTime] = useState(new Date());
   const [sysMenuOpen, setSysMenuOpen] = useState(false);
+  const [coherence, setCoherence] = useState(98.1);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000);
+    const interval = setInterval(() => {
+      setTime(new Date());
+      setCoherence(98.1 + Math.sin(Date.now() / 4000) * 0.7);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -33,148 +33,162 @@ const TopPanel = memo(function TopPanel() {
     dispatch({ type: 'TOGGLE_APP_LAUNCHER' });
   }, [dispatch]);
 
-  const formattedTime = format(time, 'EEE h:mm a');
-  const formattedDate = format(time, 'EEEE, MMMM d, yyyy');
+  const t = format(time, 'HH:mm:ss');
+  const dateLabel = format(time, 'EEE d MMM').toUpperCase();
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-2 text-xs font-medium select-none"
+      className="fixed top-0 left-0 right-0 z-[200] flex items-center justify-between select-none"
       style={{
-        height: 28,
+        height: 30,
         background: 'var(--bg-panel)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
         borderBottom: '1px solid var(--border-subtle)',
         color: 'var(--text-primary)',
+        padding: '0 16px',
       }}
     >
-      {/* Left: Activities */}
-      <div className="flex items-center">
+      {/* Left: brand + activities */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="brand-mark" style={{ width: 11, height: 11 }} />
+          <span className="font-display font-bold tracking-[0.18em]" style={{ fontSize: 12 }}>
+            SERK3T<span style={{ color: 'var(--text-thin)', fontWeight: 500 }}>OS</span>
+          </span>
+        </div>
+        <div className="hairline" style={{ width: 1, height: 14 }} />
         <button
           onClick={handleActivities}
-          className="h-7 px-3 rounded hover:bg-[var(--bg-hover)] transition-colors text-xs font-medium"
+          className="font-mono hover:bg-[var(--bg-hover)] transition-colors"
+          style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)', padding: '4px 8px', borderRadius: 4 }}
         >
-          Activities
+          ◈ Membrane
         </button>
       </div>
 
-      {/* Center: Clock */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2 h-7 px-2 rounded text-xs font-medium group relative flex items-center"
-      >
-        <span>{formattedTime}</span>
-        {/* Tooltip */}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 rounded bg-[var(--bg-tooltip)] text-[var(--text-primary)] text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[5000]">
-          {formattedDate}
-        </div>
+      {/* Center: telemetry clock */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-5">
+        <span className="font-mono" style={{ fontSize: 9, letterSpacing: '0.18em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
+          {dateLabel}
+        </span>
+        <span className="font-mono glow-text-violet" style={{ fontSize: 11, letterSpacing: '0.14em', color: 'var(--text-primary)' }}>
+          {t}
+        </span>
+        <span className="font-mono" style={{ fontSize: 9, letterSpacing: '0.16em', color: 'var(--text-tertiary)' }}>
+          COH <b style={{ color: 'var(--accent-primary)' }}>{coherence.toFixed(1)}%</b>
+        </span>
       </div>
 
-      {/* Right: System tray */}
-      <div className="flex items-center gap-1">
-        <button className="h-7 px-1.5 rounded hover:bg-[var(--bg-hover)] transition-colors">
-          <Accessibility size={14} />
-        </button>
-        <button className="h-7 px-1.5 rounded hover:bg-[var(--bg-hover)] transition-colors">
-          <Keyboard size={14} />
-        </button>
-        <button className="h-7 px-1.5 rounded hover:bg-[var(--bg-hover)] transition-colors">
-          <Wifi size={14} />
-        </button>
-        <button className="h-7 px-1.5 rounded hover:bg-[var(--bg-hover)] transition-colors">
-          <Volume2 size={14} />
-        </button>
-        <button className="h-7 px-1.5 rounded hover:bg-[var(--bg-hover)] transition-colors flex items-center gap-1">
-          <Battery size={14} />
-          <span className="text-[10px]">100%</span>
-        </button>
+      {/* Right: status */}
+      <div className="flex items-center gap-4">
+        <span className="font-mono flex items-center gap-1.5" style={{ fontSize: 9, letterSpacing: '0.16em', color: 'var(--text-secondary)' }}>
+          <span className="status-dot" />
+          VEIL LINK / STABLE
+        </span>
+        <div className="hairline" style={{ width: 1, height: 14 }} />
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setSysMenuOpen(!sysMenuOpen)}
-            className="h-7 px-1.5 rounded hover:bg-[var(--bg-hover)] transition-colors"
+            className="hover:bg-[var(--bg-hover)] transition-colors"
+            style={{ padding: 5, borderRadius: 4, color: 'var(--text-secondary)' }}
+            title="System"
           >
-            <Power size={14} />
+            <Power size={13} />
           </button>
 
           {sysMenuOpen && (
             <div
-              className="absolute top-full right-0 mt-1 py-2 rounded-lg z-[5000]"
+              className="absolute top-full right-0 mt-1 py-1 z-[5000] surface-glass"
               style={{
-                background: 'var(--bg-context-menu)',
+                borderRadius: 8,
                 boxShadow: 'var(--shadow-lg)',
-                border: '1px solid var(--border-default)',
-                width: 240,
-                animation: 'menuAppear 120ms cubic-bezier(0, 0, 0.2, 1)',
+                width: 244,
+                animation: 'scaleIn 120ms cubic-bezier(0,0,0.2,1)',
               }}
             >
-              {/* User row */}
-              <div className="flex items-center gap-2 px-3 py-2 mb-1">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7C4DFF, #4A148C)' }}>
-                  <span className="text-white text-xs font-bold">U</span>
-                </div>
-                <span className="text-sm font-medium flex-1">{state.auth.userName}</span>
-                <button
-                  className="w-7 h-7 rounded flex items-center justify-center hover:bg-[var(--bg-hover)]"
-                  onClick={() => {
-                    setSysMenuOpen(false);
-                    dispatch({ type: 'OPEN_WINDOW', appId: 'auraos', viewport: { width: window.innerWidth, height: window.innerHeight } });
+              <div className="flex items-center gap-2.5 px-3 py-2.5">
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 6,
+                    background: 'linear-gradient(135deg, #6245d9, #805cff)',
+                    boxShadow: 'var(--glow-violet)',
                   }}
                 >
-                  <span className="text-xs">⚙</span>
-                </button>
+                  <span className="font-display font-bold text-white" style={{ fontSize: 12 }}>
+                    {(state.auth.userName[0] || 'U').toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-display font-semibold truncate" style={{ fontSize: 12, color: 'var(--text-primary)' }}>
+                    {state.auth.userName}
+                  </div>
+                  <div className="font-mono" style={{ fontSize: 8, letterSpacing: '0.16em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
+                    OPERATOR / CLEARANCE-9
+                  </div>
+                </div>
               </div>
 
-              <div className="my-1 mx-2" style={{ height: 1, background: 'var(--border-subtle)' }} />
+              <div className="hairline mx-2" />
 
               {[
-                { label: 'Wired Connection', icon: '🌐', toggle: true },
-                { label: 'Wi-Fi', icon: '📶', toggle: true },
-                { label: 'Bluetooth', icon: '🔵', toggle: true },
+                { label: 'Veil Channel', on: true },
+                { label: 'Neural Mesh', on: true },
+                { label: 'Ghost Uplink', on: false },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 px-3 py-2 hover:bg-[var(--bg-hover)] cursor-pointer">
-                  <span className="text-xs">{item.icon}</span>
-                  <span className="text-sm flex-1">{item.label}</span>
-                  {item.toggle && (
-                    <div className="w-8 h-5 rounded-full relative" style={{ background: 'var(--accent-primary)' }}>
-                      <div className="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white" />
-                    </div>
-                  )}
+                  <span className="font-mono flex-1" style={{ fontSize: 10, letterSpacing: '0.1em', color: 'var(--text-secondary)' }}>
+                    {item.label}
+                  </span>
+                  <div
+                    style={{
+                      width: 26,
+                      height: 14,
+                      borderRadius: 999,
+                      background: item.on ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)',
+                      position: 'relative',
+                      boxShadow: item.on ? '0 0 10px rgba(128,92,255,0.5)' : 'none',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 2,
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        background: '#fff',
+                        left: item.on ? 14 : 2,
+                        transition: 'left 150ms ease',
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
 
-              <div className="my-1 mx-2" style={{ height: 1, background: 'var(--border-subtle)' }} />
+              <div className="hairline mx-2" />
 
               <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--bg-hover)] transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--bg-hover)] transition-colors font-mono"
+                style={{ fontSize: 10, letterSpacing: '0.1em', color: 'var(--text-secondary)' }}
                 onClick={() => { setSysMenuOpen(false); dispatch({ type: 'LOGOUT' }); }}
               >
-                <span>🔒</span>
-                Lock
+                ◳ Seal Membrane
               </button>
               <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--bg-hover)] transition-colors text-left"
-                onClick={() => { setSysMenuOpen(false); dispatch({ type: 'LOGOUT' }); }}
-              >
-                <span>🚪</span>
-                Log Out
-              </button>
-              <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--bg-hover)] transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--bg-hover)] transition-colors font-mono"
+                style={{ fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent-crimson)' }}
                 onClick={() => setSysMenuOpen(false)}
               >
-                <span>⏻</span>
-                Power Off / Restart
+                ⏻ Power Down
               </button>
             </div>
           )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes menuAppear {
-          from { opacity: 0; transform: scale(0.95) translateY(-4px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-      `}</style>
     </div>
   );
 });

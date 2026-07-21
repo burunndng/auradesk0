@@ -9,14 +9,18 @@ import AppRouter from '@/apps/AppRouter';
 
 function WindowLoading() {
   return (
-    <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-window)' }}>
+    <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: 'var(--bg-window)' }}>
       <div
         className="w-6 h-6 rounded-full border-2 border-transparent animate-spin"
         style={{
           borderTopColor: 'var(--accent-primary)',
-          borderRightColor: 'var(--accent-primary)',
+          borderRightColor: 'var(--accent-cyan)',
+          filter: 'drop-shadow(0 0 8px rgba(128,92,255,0.5))',
         }}
       />
+      <span className="font-mono" style={{ fontSize: 9, letterSpacing: '0.18em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
+        summoning signal...
+      </span>
     </div>
   );
 }

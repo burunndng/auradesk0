@@ -10,7 +10,7 @@ import { APP_REGISTRY, getAppById, getDefaultDockApps } from '@/apps/registry';
 // ---- Helpers ----
 const generateId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-const TOP_PANEL_HEIGHT = 28;
+const TOP_PANEL_HEIGHT = 30;
 
 const createWindow = (state: OSState, appId: string, title?: string, viewport?: { width: number; height: number }): Window => {
   const app = getAppById(appId);

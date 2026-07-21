@@ -10,6 +10,7 @@ import TopPanel from '@/components/TopPanel';
 import Dock from '@/components/Dock';
 import AppLauncher from '@/components/AppLauncher';
 import WindowManager from '@/components/WindowManager';
+import NeuralCoreBackground from '@/components/NeuralCoreBackground';
 
 function AppShell() {
   const { state, dispatch } = useOS();
@@ -104,16 +105,11 @@ function AppShell() {
       {/* Desktop Shell */}
       {showDesktop && (
         <div className="relative w-full h-full" style={{ background: 'var(--bg-desktop)' }}>
-          {/* Wallpaper layer */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${state.theme.wallpaper})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              zIndex: 0,
-            }}
-          />
+          {/* Live neural-core wallpaper layer */}
+          <NeuralCoreBackground />
+
+          {/* Vignette over wallpaper */}
+          <div className="absolute inset-0 overlay-vignette pointer-events-none" style={{ zIndex: 1 }} />
 
           {/* Desktop Icons layer */}
           <Desktop />
@@ -134,13 +130,12 @@ function AppShell() {
           {state.isAltTabbing && (
             <div
               className="fixed inset-0 z-[5000] flex items-center justify-center pointer-events-none"
-              style={{ background: 'rgba(0,0,0,0.3)' }}
+              style={{ background: 'rgba(3,2,7,0.55)' }}
             >
               <div
-                className="flex items-center gap-3 px-6 py-4 rounded-2xl pointer-events-auto"
+                className="flex items-center gap-3 px-6 py-4 pointer-events-auto surface-glass"
                 style={{
-                  background: 'rgba(30,30,30,0.9)',
-                  backdropFilter: 'blur(16px)',
+                  borderRadius: 14,
                   animation: 'alttabAppear 150ms ease',
                 }}
               >
@@ -152,22 +147,30 @@ function AppShell() {
                     return (
                       <div
                         key={w.id}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all"
+                        className="flex flex-col items-center gap-2 p-3 transition-all"
                         style={{
-                          background: isSelected ? 'var(--bg-hover)' : 'transparent',
-                          border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                          borderRadius: 12,
+                          background: isSelected ? 'rgba(128,92,255,0.18)' : 'transparent',
+                          border: isSelected ? '1px solid var(--border-glow)' : '1px solid transparent',
+                          boxShadow: isSelected ? '0 0 20px rgba(128,92,255,0.35)' : 'none',
                           width: 80,
                         }}
                       >
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                          style={{ background: 'var(--bg-hover)' }}>
-                          <span className="text-2xl">
-                            {app?.icon === 'Monitor' && '🖥️'}
-                            {app?.icon === 'Music' && '🎵'}
-                            {!['Monitor', 'Music'].includes(app?.icon || '') && '📱'}
+                        <div className="flex items-center justify-center"
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 10,
+                            background: 'rgba(107,70,223,0.12)',
+                            border: '1px solid var(--border-subtle)',
+                          }}>
+                          <span style={{ fontSize: 18 }}>
+                            {app?.icon === 'Monitor' && '◈'}
+                            {app?.icon === 'Music' && '◉'}
+                            {!['Monitor', 'Music'].includes(app?.icon || '') && '◯'}
                           </span>
                         </div>
-                        <span className="text-[10px] text-[var(--text-primary)] text-center truncate max-w-[64px]">
+                        <span className="font-mono text-center truncate" style={{ fontSize: 8, letterSpacing: '0.1em', color: 'var(--text-primary)', maxWidth: 64 }}>
                           {w.title}
                         </span>
                       </div>

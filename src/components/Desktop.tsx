@@ -82,11 +82,8 @@ const Desktop = memo(function Desktop() {
       ref={desktopRef}
       className="fixed inset-0 z-10"
       style={{
-        backgroundImage: `url(${theme.wallpaper})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        top: 28,
-        bottom: 48,
+        top: 30,
+        bottom: 50,
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -97,13 +94,13 @@ const Desktop = memo(function Desktop() {
       {desktopIcons.map((icon) => (
         <div
           key={icon.id}
-          className="absolute flex flex-col items-center gap-1 cursor-pointer group"
+          className="absolute flex flex-col items-center gap-1.5 cursor-pointer group"
           style={{
             left: icon.position.x,
             top: icon.position.y,
-            width: 64,
+            width: 68,
             opacity: draggingId === icon.id ? 0.5 : 1,
-            animation: 'iconAppear 300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+            animation: 'iconAppear 350ms cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
           onDoubleClick={() => handleIconDoubleClick(icon)}
           onMouseDown={(e) => handleIconMouseDown(e, icon)}
@@ -113,25 +110,41 @@ const Desktop = memo(function Desktop() {
           }}
         >
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center transition-all"
+            className="flex items-center justify-center transition-all"
             style={{
-              background: icon.isSelected ? 'rgba(124,77,255,0.20)' : 'transparent',
-              border: icon.isSelected ? '1px dashed rgba(124,77,255,0.50)' : '1px solid transparent',
+              width: 50,
+              height: 50,
+              borderRadius: 12,
+              background: icon.isSelected
+                ? 'rgba(128,92,255,0.22)'
+                : 'rgba(107,70,223,0.06)',
+              border: icon.isSelected
+                ? '1px solid var(--border-glow)'
+                : '1px solid var(--border-subtle)',
+              boxShadow: icon.isSelected
+                ? 'inset 0 0 20px rgba(112,71,255,0.25), 0 0 18px rgba(128,92,255,0.3)'
+                : 'none',
             }}
           >
             <DynamicIcon
               name={icon.icon}
-              size={32}
-              className="text-[var(--text-primary)] drop-shadow-lg"
-              style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}
+              size={26}
+              style={{
+                color: icon.isSelected ? 'var(--accent-cyan)' : 'var(--text-primary)',
+                filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(128,92,255,0.4))',
+              }}
             />
           </div>
           <span
-            className="text-[10px] font-medium text-center px-1 py-0.5 rounded max-w-[72px] truncate leading-tight"
+            className="font-mono text-center px-1.5 py-0.5 truncate leading-tight"
             style={{
-              color: '#E0E0E0',
-              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-              background: icon.isSelected ? 'rgba(124,77,255,0.30)' : 'transparent',
+              fontSize: 9,
+              letterSpacing: '0.1em',
+              maxWidth: 76,
+              color: '#E8E4FF',
+              textShadow: '0 1px 4px rgba(0,0,0,0.95)',
+              background: icon.isSelected ? 'rgba(128,92,255,0.30)' : 'transparent',
+              borderRadius: 3,
             }}
           >
             {icon.name}

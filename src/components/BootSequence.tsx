@@ -1,168 +1,160 @@
-// ============================================================
-// BootSequence — 4-phase animated boot
-// ============================================================
-
 import { useEffect, useState, memo } from 'react';
 
-const PHASE_LOGO = 0;
-const PHASE_LOADING = 1;
-const PHASE_TRANSITION = 2;
-const PHASE_DESKTOP = 3;
-const PHASE_DONE = 4;
+const PHASE_INTRO = 0;
+const PHASE_LINK = 1;
+const PHASE_REVEAL = 2;
+const PHASE_DONE = 3;
+
+const BOOT_LOG = [
+  '> initializing obsidian lattice...',
+  '> mounting neural membrane [0x3a:f1]...',
+  '> veil channel ... OK',
+  '> coherence sync ... 98.7%',
+  '> NEURAL LINK ESTABLISHED',
+];
 
 const BootSequence = memo(function BootSequence({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<number>(PHASE_LOGO);
+  const [phase, setPhase] = useState<number>(PHASE_INTRO);
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('Loading system...');
+  const [logIndex, setLogIndex] = useState(0);
+  const [coherence, setCoherence] = useState(0);
 
   useEffect(() => {
+    if (phase !== PHASE_INTRO) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
+    timers.push(setTimeout(() => setPhase(PHASE_LINK), 600));
+    return () => timers.forEach(clearTimeout);
+  }, [phase]);
 
-    timers.push(
-      setTimeout(() => {
-        setPhase(PHASE_LOADING);
-      }, 800)
-    );
-
-    timers.push(
-      setTimeout(() => {
-        let p = 0;
-        const interval = setInterval(() => {
-          p += Math.random() * 15 + 5;
-          if (p >= 100) {
-            p = 100;
-            clearInterval(interval);
-          }
-          setProgress(p);
-          if (p > 30) setLoadingText('Initializing services...');
-          if (p > 70) setLoadingText('Preparing desktop...');
-        }, 120);
-        timers.push(interval as unknown as ReturnType<typeof setTimeout>);
-      }, 800)
-    );
-
-    timers.push(
-      setTimeout(() => {
-        setPhase(PHASE_TRANSITION);
-      }, 2600)
-    );
-
-    timers.push(
-      setTimeout(() => {
-        setPhase(PHASE_DESKTOP);
-      }, 3400)
-    );
-
-    timers.push(
-      setTimeout(() => {
-        setPhase(PHASE_DONE);
-        onComplete();
-      }, 4200)
-    );
-
-    return () => timers.forEach((t) => clearTimeout(t));
-  }, [onComplete]);
+  useEffect(() => {
+    if (phase !== PHASE_LINK) return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let p = 0;
+    const interval = setInterval(() => {
+      p += Math.random() * 11 + 4;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(interval);
+      }
+      setProgress(p);
+      setCoherence(p);
+      setLogIndex(Math.min(BOOT_LOG.length - 1, Math.floor((p / 100) * BOOT_LOG.length)));
+    }, 130);
+    timers.push(interval as unknown as ReturnType<typeof setTimeout>);
+    timers.push(setTimeout(() => setPhase(PHASE_REVEAL), 2600));
+    timers.push(setTimeout(() => setPhase(PHASE_DONE), 3300));
+    timers.push(setTimeout(() => onComplete(), 3600));
+    return () => timers.forEach(clearTimeout);
+  }, [phase, onComplete]);
 
   if (phase === PHASE_DONE) return null;
 
-  const showContent = phase === PHASE_LOGO || phase === PHASE_LOADING || phase === PHASE_TRANSITION;
+  const revealing = phase === PHASE_REVEAL;
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
       style={{
-        transition: 'clip-path 800ms cubic-bezier(0, 0, 0.2, 1)',
-        clipPath:
-          phase === PHASE_DESKTOP || phase === PHASE_TRANSITION
-            ? phase === PHASE_DESKTOP
-              ? 'circle(150% at 50% 50%)'
-              : 'circle(0% at 50% 50%)'
-            : undefined,
+        background: 'radial-gradient(circle at center, #140d2a 0%, #05030a 38%, #010104 78%)',
+        transition: 'clip-path 700ms cubic-bezier(0,0,0.2,1), opacity 400ms ease',
+        clipPath: revealing ? 'circle(0% at 50% 50%)' : 'circle(150% at 50% 50%)',
+        opacity: revealing ? 0 : 1,
       }}
     >
-      {phase === PHASE_TRANSITION && (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/wallpaper-default.jpg)' }}
-        />
-      )}
-
-      {showContent && (
-        <div
-          className="flex flex-col items-center justify-center relative z-10"
+      {/* Rotating glyph mark */}
+      <div className="relative flex items-center justify-center" style={{ width: 140, height: 140 }}>
+        <svg
+          width="140"
+          height="140"
+          viewBox="0 0 140 140"
           style={{
-            opacity: phase === PHASE_TRANSITION ? 0 : 1,
-            transition: 'opacity 400ms ease',
+            animation: 'glyphRotate 8s linear infinite',
+            filter: 'drop-shadow(0 0 22px rgba(128,92,255,0.7))',
           }}
         >
+          <polygon
+            points="70,12 128,70 70,128 12,70"
+            fill="none"
+            stroke="rgba(147,116,255,0.35)"
+            strokeWidth="1"
+          />
+          <polygon
+            points="70,28 112,70 70,112 28,70"
+            fill="none"
+            stroke="rgba(87,246,225,0.4)"
+            strokeWidth="1"
+          />
+          <circle cx="70" cy="70" r="3" fill="#ece9ff" />
+        </svg>
+        <div
+          className="absolute font-display font-extrabold"
+          style={{
+            fontSize: 38,
+            color: '#ece9ff',
+            textShadow: '0 0 24px rgba(128,92,255,0.9)',
+            animation: 'corePulse 2.4s ease-in-out infinite',
+          }}
+        >
+          S
+        </div>
+      </div>
+
+      <h1
+        className="font-display font-extrabold tracking-[0.06em] mt-8"
+        style={{
+          fontSize: 34,
+          color: '#ece9ff',
+          letterSpacing: '0.08em',
+        }}
+      >
+        SERK3T<span style={{ color: '#8b84a7', fontWeight: 500 }}>OS</span>
+      </h1>
+      <p
+        className="font-mono mt-2"
+        style={{ fontSize: 10, letterSpacing: '0.3em', color: '#79718f', textTransform: 'uppercase' }}
+      >
+        THE OBSCURE INTERFACE
+      </p>
+
+      {/* Neural-link log */}
+      {phase >= PHASE_LINK && (
+        <div className="mt-9 flex flex-col items-center" style={{ minWidth: 320 }}>
+          <div className="w-[280px] h-[2px] mb-3" style={{ background: 'rgba(128,92,255,0.18)' }}>
+            <div
+              style={{
+                width: `${progress}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, #6245d9, #805cff, #57f6e1)',
+                boxShadow: '0 0 12px rgba(128,92,255,0.8)',
+                transition: 'width 130ms linear',
+              }}
+            />
+          </div>
           <div
-            className="mb-4"
-            style={{
-              opacity: phase >= PHASE_LOGO ? 1 : 0,
-              transform: `scale(${phase >= PHASE_LOGO ? 1 : 0.8})`,
-              filter: phase >= PHASE_LOGO ? 'blur(0px)' : 'blur(8px)',
-              transition: 'all 600ms cubic-bezier(0, 0, 0.2, 1)',
-              animation: phase === PHASE_LOADING ? 'pulse 1.6s ease-in-out infinite' : undefined,
-            }}
+            className="font-mono"
+            style={{ fontSize: 10, color: '#9388bd', letterSpacing: '0.12em', minHeight: 16 }}
           >
-            <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="48" cy="48" r="46" fill="#7C4DFF" opacity="0.9" />
-              <circle cx="34" cy="40" r="16" fill="#FF9800" opacity="0.85" />
-              <circle cx="58" cy="56" r="14" fill="#E91E63" opacity="0.7" />
-            </svg>
+            {BOOT_LOG[logIndex]}
           </div>
 
-          <h1
-            className="text-[28px] font-bold tracking-[0.1em] text-[#E0E0E0] mb-6"
-            style={{
-              opacity: phase >= PHASE_LOGO ? 1 : 0,
-              transform: `translateY(${phase >= PHASE_LOGO ? 0 : 10}px)`,
-              transition: 'all 400ms cubic-bezier(0, 0, 0.2, 1) 400ms',
-            }}
+          {/* Telemetry row */}
+          <div
+            className="flex items-center gap-6 mt-5 font-mono"
+            style={{ fontSize: 9, letterSpacing: '0.18em', color: '#6e6780', textTransform: 'uppercase' }}
           >
-            SerK3tOS
-          </h1>
-
-          {phase >= PHASE_LOADING && (
-            <div
-              className="w-[200px] h-[3px] rounded-full overflow-hidden mb-3"
-              style={{
-                background: 'rgba(124,77,255,0.2)',
-                opacity: phase >= PHASE_LOADING ? 1 : 0,
-                transition: 'opacity 200ms ease',
-              }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${progress}%`,
-                  background: '#7C4DFF',
-                  transition: 'width 100ms linear',
-                }}
-              />
-            </div>
-          )}
-
-          {phase >= PHASE_LOADING && (
-            <p
-              className="text-[10px] text-[#9E9E9E] tracking-wider"
-              style={{
-                opacity: phase >= PHASE_LOADING ? 1 : 0,
-                transition: 'opacity 300ms ease',
-              }}
-            >
-              {loadingText}
-            </p>
-          )}
+            <span>
+              CORE <b style={{ color: '#70ffd3' }}>ONLINE</b>
+            </span>
+            <span>
+              COHERENCE <b style={{ color: '#805cff' }}>{coherence.toFixed(1)}%</b>
+            </span>
+          </div>
         </div>
       )}
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-      `}</style>
+      {/* scanlines */}
+      <div className="absolute inset-0 overlay-scanlines pointer-events-none" style={{ opacity: 0.35 }} />
+      <div className="absolute inset-0 overlay-vignette pointer-events-none" />
     </div>
   );
 });

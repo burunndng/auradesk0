@@ -91,43 +91,64 @@ const Dock = memo(function Dock() {
         {/* Tooltip */}
         {isHovered && (
           <div
-            className="absolute bottom-full mb-2 px-2 py-1 rounded text-[10px] font-medium whitespace-nowrap z-[4000]"
+            className="absolute bottom-full mb-2 px-2 py-1 whitespace-nowrap z-[4000] font-mono"
             style={{
               background: 'var(--bg-tooltip)',
               color: 'var(--text-primary)',
               boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 4,
+              fontSize: 9,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
               animation: 'tooltipAppear 100ms ease',
             }}
           >
-            {isTrash ? 'Trash' : app?.name || appId}
+            {isTrash ? 'Recycle' : app?.name || appId}
           </div>
         )}
 
         {/* Icon */}
         <button
           onClick={() => isTrash ? handleTrashClick() : handleAppClick(appId)}
-          className="w-10 h-10 rounded-[10px] flex items-center justify-center transition-all"
+          className="flex items-center justify-center transition-all"
           style={{
-            background: isHovered ? 'var(--bg-hover)' : 'transparent',
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: isHovered ? 'rgba(107,70,223,0.14)' : 'transparent',
+            border: `1px solid ${isHovered ? 'var(--border-glow)' : 'transparent'}`,
+            boxShadow: isHovered ? 'inset 0 0 18px rgba(112,71,255,0.18), 0 0 14px rgba(102,61,244,0.16)' : 'none',
             transform: isBouncing ? 'translateY(-6px)' : 'scale(1)',
             transition: isBouncing ? 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)' : 'all 150ms ease',
-            opacity: isTrash ? 0.7 : isOpen ? 1 : 0.85,
+            opacity: isTrash ? 0.65 : isOpen ? 1 : 0.78,
           }}
         >
           {isTrash ? (
-            <Trash2 size={22} className="text-[var(--text-primary)]" />
+            <Trash2 size={20} style={{ color: 'var(--text-secondary)' }} />
           ) : (
-            <DynamicIcon name={app?.icon || 'HelpCircle'} size={22} className="text-[var(--text-primary)]" />
+            <DynamicIcon
+              name={app?.icon || 'HelpCircle'}
+              size={20}
+              style={{
+                color: isHovered ? 'var(--text-primary)' : 'var(--text-secondary)',
+                filter: isOpen ? 'drop-shadow(0 0 6px rgba(128,92,255,0.6))' : 'none',
+              }}
+            />
           )}
         </button>
 
-        {/* Active indicator dot */}
+        {/* Active indicator */}
         {isOpen && (
           <div
-            className="absolute -bottom-0.5 w-1 h-1 rounded-full"
+            className="absolute -bottom-0.5"
             style={{
-              background: isFocused ? 'var(--accent-primary)' : 'var(--text-disabled)',
-              animation: 'dotAppear 200ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+              width: isFocused ? 14 : 6,
+              height: 2,
+              borderRadius: 2,
+              background: isFocused ? 'var(--accent-cyan)' : 'var(--text-tertiary)',
+              boxShadow: isFocused ? '0 0 8px var(--accent-cyan)' : 'none',
+              transition: 'width 200ms cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
           />
         )}
@@ -139,52 +160,49 @@ const Dock = memo(function Dock() {
     <div
       className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-0.5 px-2"
       style={{
-        height: 48,
-        background: 'rgba(45,45,45,0.75)',
+        height: 50,
+        background: 'var(--bg-panel)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '16px 16px 0 0',
+        borderRadius: '14px 14px 0 0',
         border: '1px solid var(--border-subtle)',
         borderBottom: 'none',
+        boxShadow: '0 -8px 32px rgba(0,0,0,0.5)',
         animation: 'dockSlideUp 300ms cubic-bezier(0, 0, 0.2, 1)',
       }}
     >
       {/* Show Applications button */}
       <button
         onClick={handleShowApps}
-        className="w-10 h-10 rounded-[10px] flex items-center justify-center hover:bg-[var(--bg-hover)] transition-all"
+        className="flex items-center justify-center transition-all"
         style={{
-          background: state.appLauncherOpen ? 'var(--bg-active)' : 'transparent',
+          width: 40,
+          height: 40,
+          borderRadius: 10,
+          background: state.appLauncherOpen ? 'rgba(107,70,223,0.18)' : 'transparent',
+          border: `1px solid ${state.appLauncherOpen ? 'var(--border-glow)' : 'transparent'}`,
+          color: state.appLauncherOpen ? 'var(--accent-cyan)' : 'var(--text-secondary)',
         }}
       >
-        <LayoutGrid size={20} className="text-[var(--text-primary)]" />
+        <LayoutGrid size={19} />
       </button>
 
       {/* Separator */}
-      <div
-        className="mx-1 shrink-0"
-        style={{ width: 1, height: 24, background: 'var(--border-subtle)' }}
-      />
+      <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 24 }} />
 
       {/* Pinned apps */}
       {pinnedItems.map((item) => renderDockIcon(item.appId))}
 
       {/* Separator (if there are open unpinned apps) */}
       {openUnpinned.length > 0 && (
-        <div
-          className="mx-1 shrink-0"
-          style={{ width: 1, height: 24, background: 'var(--border-subtle)' }}
-        />
+        <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 24 }} />
       )}
 
       {/* Open unpinned apps */}
       {openUnpinned.map((item) => renderDockIcon(item.appId))}
 
       {/* Separator */}
-      <div
-        className="mx-1 shrink-0"
-        style={{ width: 1, height: 24, background: 'var(--border-subtle)' }}
-      />
+      <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 24 }} />
 
       {/* Trash */}
       {renderDockIcon('trash', true)}

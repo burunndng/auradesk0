@@ -8,7 +8,7 @@ import { useOS } from '@/hooks/useOSStore';
 import * as Icons from 'lucide-react';
 import type { LucideProps } from 'lucide-react';
 
-const TOP_PANEL_HEIGHT = 28;
+const TOP_PANEL_HEIGHT = 30;
 const RESIZE_HANDLE = 8;
 const MIN_W = 320;
 const MIN_H = 200;
@@ -202,12 +202,12 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         width: win.size.width,
         height: win.size.height,
         zIndex: win.zIndex,
-        borderRadius: isMaximized ? 0 : 12,
-        border: `1px solid ${isFocused ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)'}`,
+        borderRadius: isMaximized ? 0 : 10,
+        border: `1px solid ${isFocused ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
         boxShadow: isFocused
-          ? '0 8px 32px rgba(0,0,0,0.5)'
-          : '0 2px 8px rgba(0,0,0,0.3)',
-        transition: isDragging || isResizing ? 'none' : 'box-shadow 150ms ease, border-color 150ms ease',
+          ? '0 16px 50px rgba(0,0,0,0.7), 0 0 0 1px rgba(128,92,255,0.18), inset 0 0 0 1px rgba(128,92,255,0.04)'
+          : '0 6px 20px rgba(0,0,0,0.5)',
+        transition: isDragging || isResizing ? 'none' : 'box-shadow 180ms ease, border-color 180ms ease',
         overflow: 'hidden',
       }}
       onMouseDown={handleMouseDown}
@@ -236,22 +236,44 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
       <div
         className="relative z-10 flex items-center justify-between shrink-0"
         style={{
-          height: 36,
-          background: isFocused ? '#1A1A1A' : '#141414',
-          borderRadius: isMaximized ? 0 : '12px 12px 0 0',
-          transition: 'background 150ms ease',
+          height: 34,
+          background: isFocused
+            ? 'linear-gradient(180deg, rgba(20,14,38,0.95), rgba(10,7,19,0.95))'
+            : 'rgba(8,5,16,0.95)',
+          borderBottom: `1px solid ${isFocused ? 'var(--border-default)' : 'var(--border-subtle)'}`,
+          borderRadius: isMaximized ? 0 : '10px 10px 0 0',
+          transition: 'background 150ms ease, border-color 150ms ease',
           cursor: isMaximized ? 'default' : 'grab',
         }}
         onMouseDown={handleTitleMouseDown}
         onDoubleClick={handleDoubleClickTitle}
       >
+        {/* scanline accent */}
+        <div
+          className="absolute inset-0 overlay-scanlines pointer-events-none"
+          style={{ opacity: 0.25, borderRadius: isMaximized ? 0 : '10px 10px 0 0' }}
+        />
+
         {/* Left: icon + title */}
-        <div className="flex items-center gap-2 px-3 overflow-hidden">
-          <DynamicIcon name={win.icon} size={16} className="text-[var(--text-secondary)] shrink-0" />
-          <span
-            className="text-xs font-semibold truncate"
+        <div className="flex items-center gap-2 px-3 overflow-hidden relative z-10">
+          <span className="font-mono" style={{ fontSize: 8, letterSpacing: '0.16em', color: 'var(--text-tertiary)' }}>
+            ◈
+          </span>
+          <DynamicIcon
+            name={win.icon}
+            size={13}
             style={{
-              color: isFocused ? '#E0E0E0' : '#9E9E9E',
+              color: isFocused ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+              filter: isFocused ? 'drop-shadow(0 0 6px rgba(128,92,255,0.6))' : 'none',
+            }}
+          />
+          <span
+            className="font-mono truncate"
+            style={{
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: isFocused ? 'var(--text-primary)' : 'var(--text-tertiary)',
               transition: 'color 150ms ease',
             }}
           >
@@ -260,37 +282,44 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         </div>
 
         {/* Right: window controls */}
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center shrink-0 relative z-10">
           <button
             onClick={handleMinimize}
-            className="w-9 h-9 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            style={{ borderRadius: isMaximized ? 0 : '0 0 0 0' }}
+            className="flex items-center justify-center transition-colors"
+            style={{ width: 36, height: 34, color: 'var(--text-tertiary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(147,116,255,0.10)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent'; }}
             title="Minimize"
           >
-            <Icons.Minus size={14} />
+            <Icons.Minus size={12} />
           </button>
           <button
             onClick={handleMaximize}
-            className="w-9 h-9 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center justify-center transition-colors"
+            style={{ width: 36, height: 34, color: 'var(--text-tertiary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(147,116,255,0.10)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent'; }}
             title={isMaximized ? 'Restore' : 'Maximize'}
           >
-            {isMaximized ? <Icons.Copy size={12} /> : <Icons.Square size={12} />}
+            {isMaximized ? <Icons.Copy size={11} /> : <Icons.Square size={11} />}
           </button>
           <button
             onClick={handleClose}
-            className="w-9 h-9 flex items-center justify-center text-[var(--text-secondary)] transition-colors"
-            style={{ borderRadius: isMaximized ? 0 : '0 12px 0 0' }}
+            className="flex items-center justify-center transition-colors"
+            style={{ width: 36, height: 34, color: 'var(--text-tertiary)', borderRadius: isMaximized ? 0 : '0 10px 0 0' }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#F44336';
+              e.currentTarget.style.background = 'var(--accent-crimson)';
               e.currentTarget.style.color = 'white';
+              e.currentTarget.style.boxShadow = '0 0 16px rgba(255,49,91,0.5)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.color = 'var(--text-tertiary)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
             title="Close"
           >
-            <Icons.X size={14} />
+            <Icons.X size={13} />
           </button>
         </div>
       </div>
@@ -300,7 +329,7 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         className="relative z-10 flex-1 overflow-hidden"
         style={{
           background: 'var(--bg-window)',
-          borderRadius: isMaximized ? 0 : '0 0 12px 12px',
+          borderRadius: isMaximized ? 0 : '0 0 10px 10px',
         }}
       >
         {children}
