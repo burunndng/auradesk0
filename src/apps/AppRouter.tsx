@@ -2,7 +2,7 @@
 // App Router — AuraDesk
 // ============================================================
 
-import { lazy, type FC } from 'react';
+import { type FC } from 'react';
 import { getAppById } from '@/apps/registry';
 import AppFrame from '@/components/AppFrame';
 import NotImplemented from '@/components/NotImplemented';
