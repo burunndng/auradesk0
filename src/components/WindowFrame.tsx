@@ -2,18 +2,24 @@
 // WindowFrame — Draggable, resizable window chrome
 // ============================================================
 
-import { useCallback, useRef, useState, memo, useEffect } from 'react';
-import type { Window } from '@/types';
-import { useOS } from '@/hooks/useOSStore';
-import * as Icons from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
+import { useCallback, useRef, useState, memo, useEffect } from "react";
+import type { Window } from "@/types";
+import { useOS } from "@/hooks/useOSStore";
+import * as Icons from "lucide-react";
+import type { LucideProps } from "lucide-react";
+import { getCustomIcon, isCustomIcon } from "@/components/CustomIcons";
+import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 
-const TOP_PANEL_HEIGHT = 30;
+const TOP_PANEL_HEIGHT = 44;
 const RESIZE_HANDLE = 8;
 const MIN_W = 320;
 const MIN_H = 200;
 
 const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
+  if (isCustomIcon(name)) {
+    const CustomIcon = getCustomIcon(name);
+    return CustomIcon ? <CustomIcon {...props} /> : <Icons.HelpCircle {...props} />;
+  }
   const IconComp = (Icons as unknown as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
   return IconComp ? <IconComp {...props} /> : <Icons.HelpCircle {...props} />;
 };
@@ -26,18 +32,56 @@ interface WindowFrameProps {
 const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowFrameProps) {
   const { dispatch } = useOS();
   const frameRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ isDragging: boolean; startX: number; startY: number; origX: number; origY: number } | null>(null);
-  const resizeRef = useRef<{ isResizing: boolean; edge: string; startX: number; startY: number; origW: number; origH: number; origX: number; origY: number } | null>(null);
+  const dragRef = useRef<{
+    isDragging: boolean;
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+  } | null>(null);
+  const resizeRef = useRef<{
+    isResizing: boolean;
+    edge: string;
+    startX: number;
+    startY: number;
+    origW: number;
+    origH: number;
+    origX: number;
+    origY: number;
+  } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-  const isMaximized = win.state === 'maximized';
-  const isMinimized = win.state === 'minimized';
+  const isMaximized = win.state === "maximized";
+  const isMinimized = win.state === "minimized";
   const isFocused = win.isFocused;
 
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) {
+        setIsVisible(true);
+        return;
+      }
+
+      gsap.fromTo(
+        frameRef.current,
+        { scale: 0.92, autoAlpha: 0 },
+        {
+          scale: 1,
+          autoAlpha: 1,
+          duration: DUR.normal,
+          ease: EASE.spring,
+          onComplete: () => setIsVisible(true),
+        }
+      );
+    },
+    { scope: frameRef }
+  );
+
   const focusThis = useCallback(() => {
-    if (!win.isFocused && win.state !== 'minimized') {
-      dispatch({ type: 'FOCUS_WINDOW', windowId: win.id });
+    if (!win.isFocused && win.state !== "minimized") {
+      dispatch({ type: "FOCUS_WINDOW", windowId: win.id });
     }
   }, [dispatch, win.id, win.isFocused, win.state]);
 
@@ -67,11 +111,11 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    let edge = '';
-    if (y < RESIZE_HANDLE) edge += 'n';
-    if (y > rect.height - RESIZE_HANDLE) edge += 's';
-    if (x < RESIZE_HANDLE) edge += 'w';
-    if (x > rect.width - RESIZE_HANDLE) edge += 'e';
+    let edge = "";
+    if (y < RESIZE_HANDLE) edge += "n";
+    if (y > rect.height - RESIZE_HANDLE) edge += "s";
+    if (x < RESIZE_HANDLE) edge += "w";
+    if (x > rect.width - RESIZE_HANDLE) edge += "e";
     return edge;
   }, []);
 
@@ -97,15 +141,24 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
     [isMaximized, getEdge, win.size, win.position]
   );
 
-  const getCursor = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMaximized) return 'default';
-    const edge = getEdge(e);
-    const cursors: Record<string, string> = {
-      n: 'n-resize', s: 's-resize', e: 'e-resize', w: 'w-resize',
-      nw: 'nw-resize', ne: 'ne-resize', sw: 'sw-resize', se: 'se-resize',
-    };
-    return cursors[edge] || 'default';
-  }, [isMaximized, getEdge]);
+  const getCursor = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isMaximized) return "default";
+      const edge = getEdge(e);
+      const cursors: Record<string, string> = {
+        n: "n-resize",
+        s: "s-resize",
+        e: "e-resize",
+        w: "w-resize",
+        nw: "nw-resize",
+        ne: "ne-resize",
+        sw: "sw-resize",
+        se: "se-resize",
+      };
+      return cursors[edge] || "default";
+    },
+    [isMaximized, getEdge]
+  );
 
   // ---- Global mouse events for drag/resize ----
   useEffect(() => {
@@ -118,26 +171,29 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         const vw = window.innerWidth;
         ny = Math.max(TOP_PANEL_HEIGHT, ny);
         nx = Math.min(Math.max(nx, -(win.size.width - 100)), vw - 100);
-        dispatch({ type: 'MOVE_WINDOW', windowId: win.id, position: { x: nx, y: ny } });
+        dispatch({ type: "MOVE_WINDOW", windowId: win.id, position: { x: nx, y: ny } });
       }
       if (resizeRef.current?.isResizing) {
         const { edge, startX, startY, origW, origH, origX, origY } = resizeRef.current;
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
-        let nx = origX, ny = origY, nw = origW, nh = origH;
-        if (edge.includes('e')) nw = Math.max(MIN_W, origW + dx);
-        if (edge.includes('s')) nh = Math.max(MIN_H, origH + dy);
-        if (edge.includes('w')) {
+        let nx = origX,
+          ny = origY,
+          nw = origW,
+          nh = origH;
+        if (edge.includes("e")) nw = Math.max(MIN_W, origW + dx);
+        if (edge.includes("s")) nh = Math.max(MIN_H, origH + dy);
+        if (edge.includes("w")) {
           nw = Math.max(MIN_W, origW - dx);
           nx = origX + (origW - nw);
         }
-        if (edge.includes('n')) {
+        if (edge.includes("n")) {
           nh = Math.max(MIN_H, origH - dy);
           ny = origY + (origH - nh);
           ny = Math.max(TOP_PANEL_HEIGHT, ny);
         }
-        dispatch({ type: 'MOVE_WINDOW', windowId: win.id, position: { x: nx, y: ny } });
-        dispatch({ type: 'RESIZE_WINDOW', windowId: win.id, size: { width: nw, height: nh } });
+        dispatch({ type: "MOVE_WINDOW", windowId: win.id, position: { x: nx, y: ny } });
+        dispatch({ type: "RESIZE_WINDOW", windowId: win.id, size: { width: nw, height: nh } });
       }
     };
     const onUp = () => {
@@ -146,18 +202,31 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
       setIsDragging(false);
       setIsResizing(false);
     };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
     };
   }, [dispatch, win.id, win.size.width, win.size.height]);
 
   const handleMinimize = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      dispatch({ type: 'MINIMIZE_WINDOW', windowId: win.id });
+      if (prefersReducedMotion()) {
+        dispatch({ type: "MINIMIZE_WINDOW", windowId: win.id });
+        return;
+      }
+      gsap.to(frameRef.current, {
+        scale: 0.3,
+        y: "+=200",
+        autoAlpha: 0,
+        duration: DUR.normal,
+        ease: EASE.decelerate,
+        onComplete: () => {
+          dispatch({ type: "MINIMIZE_WINDOW", windowId: win.id });
+        },
+      });
     },
     [dispatch, win.id]
   );
@@ -166,9 +235,13 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
     (e: React.MouseEvent) => {
       e.stopPropagation();
       if (isMaximized) {
-        dispatch({ type: 'RESTORE_WINDOW', windowId: win.id });
+        dispatch({ type: "RESTORE_WINDOW", windowId: win.id });
       } else {
-        dispatch({ type: 'MAXIMIZE_WINDOW', windowId: win.id, viewport: { width: window.innerWidth, height: window.innerHeight } });
+        dispatch({
+          type: "MAXIMIZE_WINDOW",
+          windowId: win.id,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+        });
       }
     },
     [dispatch, win.id, isMaximized]
@@ -177,16 +250,32 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
   const handleClose = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      dispatch({ type: 'CLOSE_WINDOW', windowId: win.id });
+      if (prefersReducedMotion()) {
+        dispatch({ type: "CLOSE_WINDOW", windowId: win.id });
+        return;
+      }
+      gsap.to(frameRef.current, {
+        scale: 0.95,
+        autoAlpha: 0,
+        duration: DUR.fast,
+        ease: EASE.decelerate,
+        onComplete: () => {
+          dispatch({ type: "CLOSE_WINDOW", windowId: win.id });
+        },
+      });
     },
     [dispatch, win.id]
   );
 
   const handleDoubleClickTitle = useCallback(() => {
     if (isMaximized) {
-      dispatch({ type: 'RESTORE_WINDOW', windowId: win.id });
+      dispatch({ type: "RESTORE_WINDOW", windowId: win.id });
     } else {
-      dispatch({ type: 'MAXIMIZE_WINDOW', windowId: win.id, viewport: { width: window.innerWidth, height: window.innerHeight } });
+      dispatch({
+        type: "MAXIMIZE_WINDOW",
+        windowId: win.id,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+      });
     }
   }, [dispatch, win.id, isMaximized]);
 
@@ -203,33 +292,113 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         height: win.size.height,
         zIndex: win.zIndex,
         borderRadius: isMaximized ? 0 : 10,
-        border: `1px solid ${isFocused ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
+        border: `1px solid ${isFocused ? "var(--border-strong)" : "var(--border-subtle)"}`,
         boxShadow: isFocused
-          ? '0 16px 50px rgba(0,0,0,0.7), 0 0 0 1px rgba(128,92,255,0.18), inset 0 0 0 1px rgba(128,92,255,0.04)'
-          : '0 6px 20px rgba(0,0,0,0.5)',
-        transition: isDragging || isResizing ? 'none' : 'box-shadow 180ms ease, border-color 180ms ease',
-        overflow: 'hidden',
+          ? "0 16px 50px rgba(0,0,0,0.7), 0 0 0 1px rgba(216,178,106,0.18), inset 0 0 0 1px rgba(216,178,106,0.04)"
+          : "0 6px 20px rgba(0,0,0,0.5)",
+        transition:
+          isDragging || isResizing ? "none" : "box-shadow 180ms ease, border-color 180ms ease",
+        overflow: "hidden",
       }}
       onMouseDown={handleMouseDown}
     >
-      {/* Resize handles wrapper — transparent overlay; only the edge strips
-          capture pointer events so the window body stays interactive. */}
+      {/* Resize handles wrapper */}
       <div
         className="absolute inset-0 z-50"
         style={{
           cursor: getCursor as unknown as string,
-          pointerEvents: 'none',
+          pointerEvents: "none",
         }}
         onMouseDown={handleResizeMouseDown}
       >
-        <div style={{ position: 'absolute', top: 0, left: RESIZE_HANDLE, right: RESIZE_HANDLE, height: RESIZE_HANDLE, cursor: 'n-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: RESIZE_HANDLE, right: RESIZE_HANDLE, height: RESIZE_HANDLE, cursor: 's-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', left: 0, top: RESIZE_HANDLE, bottom: RESIZE_HANDLE, width: RESIZE_HANDLE, cursor: 'w-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', right: 0, top: RESIZE_HANDLE, bottom: RESIZE_HANDLE, width: RESIZE_HANDLE, cursor: 'e-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, width: RESIZE_HANDLE * 2, height: RESIZE_HANDLE * 2, cursor: 'nw-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', top: 0, right: 0, width: RESIZE_HANDLE * 2, height: RESIZE_HANDLE * 2, cursor: 'ne-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: RESIZE_HANDLE * 2, height: RESIZE_HANDLE * 2, cursor: 'sw-resize', pointerEvents: 'auto' }} />
-        <div style={{ position: 'absolute', bottom: 0, right: 0, width: RESIZE_HANDLE * 2, height: RESIZE_HANDLE * 2, cursor: 'se-resize', pointerEvents: 'auto' }} />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: RESIZE_HANDLE,
+            right: RESIZE_HANDLE,
+            height: RESIZE_HANDLE,
+            cursor: "n-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: RESIZE_HANDLE,
+            right: RESIZE_HANDLE,
+            height: RESIZE_HANDLE,
+            cursor: "s-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: RESIZE_HANDLE,
+            bottom: RESIZE_HANDLE,
+            width: RESIZE_HANDLE,
+            cursor: "w-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: RESIZE_HANDLE,
+            bottom: RESIZE_HANDLE,
+            width: RESIZE_HANDLE,
+            cursor: "e-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: RESIZE_HANDLE * 2,
+            height: RESIZE_HANDLE * 2,
+            cursor: "nw-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: RESIZE_HANDLE * 2,
+            height: RESIZE_HANDLE * 2,
+            cursor: "ne-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: RESIZE_HANDLE * 2,
+            height: RESIZE_HANDLE * 2,
+            cursor: "sw-resize",
+            pointerEvents: "auto",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            width: RESIZE_HANDLE * 2,
+            height: RESIZE_HANDLE * 2,
+            cursor: "se-resize",
+            pointerEvents: "auto",
+          }}
+        />
       </div>
 
       {/* Title bar */}
@@ -238,12 +407,12 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         style={{
           height: 34,
           background: isFocused
-            ? 'linear-gradient(180deg, rgba(20,14,38,0.95), rgba(10,7,19,0.95))'
-            : 'rgba(8,5,16,0.95)',
-          borderBottom: `1px solid ${isFocused ? 'var(--border-default)' : 'var(--border-subtle)'}`,
-          borderRadius: isMaximized ? 0 : '10px 10px 0 0',
-          transition: 'background 150ms ease, border-color 150ms ease',
-          cursor: isMaximized ? 'default' : 'grab',
+            ? "linear-gradient(180deg, rgba(216,178,106,0.12), rgba(24,18,11,0.95))"
+            : "rgba(12,9,6,0.95)",
+          borderBottom: `1px solid ${isFocused ? "var(--border-default)" : "var(--border-subtle)"}`,
+          borderRadius: isMaximized ? 0 : "10px 10px 0 0",
+          transition: "background 150ms ease, border-color 150ms ease",
+          cursor: isMaximized ? "default" : "grab",
         }}
         onMouseDown={handleTitleMouseDown}
         onDoubleClick={handleDoubleClickTitle}
@@ -251,30 +420,36 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
         {/* scanline accent */}
         <div
           className="absolute inset-0 overlay-scanlines pointer-events-none"
-          style={{ opacity: 0.25, borderRadius: isMaximized ? 0 : '10px 10px 0 0' }}
+          style={{
+            opacity: 0.25,
+            borderRadius: isMaximized ? 0 : "10px 10px 0 0",
+          }}
         />
 
         {/* Left: icon + title */}
         <div className="flex items-center gap-2 px-3 overflow-hidden relative z-10">
-          <span className="font-mono" style={{ fontSize: 8, letterSpacing: '0.16em', color: 'var(--text-tertiary)' }}>
+          <span
+            className="font-mono"
+            style={{ fontSize: 8, letterSpacing: "0.16em", color: "var(--text-tertiary)" }}
+          >
             ◈
           </span>
           <DynamicIcon
             name={win.icon}
             size={13}
             style={{
-              color: isFocused ? 'var(--accent-primary)' : 'var(--text-tertiary)',
-              filter: isFocused ? 'drop-shadow(0 0 6px rgba(128,92,255,0.6))' : 'none',
+              color: isFocused ? "var(--accent-primary)" : "var(--text-tertiary)",
+              filter: isFocused ? "drop-shadow(0 0 6px rgba(216,178,106,0.6))" : "none",
             }}
           />
           <span
-            className="font-mono truncate"
+            className="font-display truncate"
             style={{
-              fontSize: 10,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: isFocused ? 'var(--text-primary)' : 'var(--text-tertiary)',
-              transition: 'color 150ms ease',
+              fontSize: 11,
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+              color: isFocused ? "var(--gold-bright)" : "var(--gold-dim)",
+              transition: "color 150ms ease",
             }}
           >
             {win.title}
@@ -286,9 +461,15 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
           <button
             onClick={handleMinimize}
             className="flex items-center justify-center transition-colors"
-            style={{ width: 36, height: 34, color: 'var(--text-tertiary)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(147,116,255,0.10)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent'; }}
+            style={{ width: 36, height: 34, color: "var(--text-tertiary)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--text-primary)";
+              e.currentTarget.style.background = "rgba(240,213,154,0.10)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-tertiary)";
+              e.currentTarget.style.background = "transparent";
+            }}
             title="Minimize"
           >
             <Icons.Minus size={12} />
@@ -296,26 +477,37 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
           <button
             onClick={handleMaximize}
             className="flex items-center justify-center transition-colors"
-            style={{ width: 36, height: 34, color: 'var(--text-tertiary)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(147,116,255,0.10)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent'; }}
-            title={isMaximized ? 'Restore' : 'Maximize'}
+            style={{ width: 36, height: 34, color: "var(--text-tertiary)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--text-primary)";
+              e.currentTarget.style.background = "rgba(240,213,154,0.10)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-tertiary)";
+              e.currentTarget.style.background = "transparent";
+            }}
+            title={isMaximized ? "Restore" : "Maximize"}
           >
             {isMaximized ? <Icons.Copy size={11} /> : <Icons.Square size={11} />}
           </button>
           <button
             onClick={handleClose}
             className="flex items-center justify-center transition-colors"
-            style={{ width: 36, height: 34, color: 'var(--text-tertiary)', borderRadius: isMaximized ? 0 : '0 10px 0 0' }}
+            style={{
+              width: 36,
+              height: 34,
+              color: "var(--text-tertiary)",
+              borderRadius: isMaximized ? 0 : "0 10px 0 0",
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--accent-crimson)';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.boxShadow = '0 0 16px rgba(255,49,91,0.5)';
+              e.currentTarget.style.background = "var(--accent-crimson)";
+              e.currentTarget.style.color = "white";
+              e.currentTarget.style.boxShadow = "0 0 16px rgba(255,49,91,0.5)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-tertiary)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text-tertiary)";
+              e.currentTarget.style.boxShadow = "none";
             }}
             title="Close"
           >
@@ -328,8 +520,8 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
       <div
         className="relative z-10 flex-1 overflow-hidden"
         style={{
-          background: 'var(--bg-window)',
-          borderRadius: isMaximized ? 0 : '0 0 10px 10px',
+          background: "var(--bg-window)",
+          borderRadius: isMaximized ? 0 : "0 0 10px 10px",
         }}
       >
         {children}

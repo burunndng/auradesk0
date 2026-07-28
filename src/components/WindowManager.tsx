@@ -15,7 +15,7 @@ function WindowLoading() {
         style={{
           borderTopColor: 'var(--accent-primary)',
           borderRightColor: 'var(--accent-cyan)',
-          filter: 'drop-shadow(0 0 8px rgba(128,92,255,0.5))',
+          filter: 'drop-shadow(0 0 8px rgba(216,178,106,0.5))',
         }}
       />
       <span className="font-mono" style={{ fontSize: 9, letterSpacing: '0.18em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>

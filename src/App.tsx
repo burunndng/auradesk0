@@ -10,7 +10,8 @@ import TopPanel from '@/components/TopPanel';
 import Dock from '@/components/Dock';
 import AppLauncher from '@/components/AppLauncher';
 import WindowManager from '@/components/WindowManager';
-import NeuralCoreBackground from '@/components/NeuralCoreBackground';
+import SacredBackground from '@/components/SacredBackground';
+import { ScarabDefs } from '@/components/Scarab';
 
 function AppShell() {
   const { state, dispatch } = useOS();
@@ -99,17 +100,17 @@ function AppShell() {
 
   return (
     <div className={state.theme.mode === 'light' ? 'light' : ''} style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      {/* Scarab SVG symbol defs (hidden) */}
+      <ScarabDefs />
+
       {/* Boot Sequence */}
       {!bootComplete && <BootSequence onComplete={handleBootComplete} />}
 
       {/* Desktop Shell */}
       {showDesktop && (
         <div className="relative w-full h-full" style={{ background: 'var(--bg-desktop)' }}>
-          {/* Live neural-core wallpaper layer */}
-          <NeuralCoreBackground />
-
-          {/* Subtle vignette over wallpaper */}
-          <div className="absolute inset-0 overlay-vignette pointer-events-none" style={{ zIndex: 1, opacity: 0.55 }} />
+          {/* Sacred scarab wallpaper layer */}
+          <SacredBackground />
 
           {/* Desktop Icons layer */}
           <Desktop />

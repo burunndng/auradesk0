@@ -45,12 +45,12 @@ export default function NotImplemented({ appId }: Props) {
           width: 76,
           height: 76,
           borderRadius: 16,
-          background: 'linear-gradient(135deg, rgba(107,70,223,0.18), rgba(4,3,11,0.4))',
+          background: 'linear-gradient(135deg, rgba(216,178,106,0.18), rgba(4,3,11,0.4))',
           border: '1px solid var(--border-default)',
           animation: 'breathe 3.5s ease-in-out infinite',
         }}
       >
-        <DynamicIcon name={app.icon} size={36} style={{ color: 'var(--accent-primary)', filter: 'drop-shadow(0 0 12px rgba(128,92,255,0.6))' }} />
+        <DynamicIcon name={app.icon} size={36} style={{ color: 'var(--accent-primary)', filter: 'drop-shadow(0 0 12px rgba(216,178,106,0.6))' }} />
       </div>
       <div className="flex flex-col items-center gap-2">
         <div className="eyebrow">◈ DORMANT MEMBRANE</div>
@@ -67,7 +67,7 @@ export default function NotImplemented({ appId }: Props) {
           fontSize: 9,
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
-          background: 'rgba(107,70,223,0.10)',
+          background: 'rgba(216,178,106,0.10)',
           border: '1px solid var(--border-subtle)',
           color: 'var(--text-secondary)',
         }}

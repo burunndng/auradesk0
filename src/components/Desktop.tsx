@@ -2,12 +2,18 @@
 // Desktop — Wallpaper + draggable desktop icons + context menu
 // ============================================================
 
-import { useCallback, memo, useState, useRef } from 'react';
-import { useOS } from '@/hooks/useOSStore';
-import * as Icons from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
+import { useCallback, memo, useState, useRef } from "react";
+import { useOS } from "@/hooks/useOSStore";
+import * as Icons from "lucide-react";
+import type { LucideProps } from "lucide-react";
+import { getCustomIcon, isCustomIcon } from "@/components/CustomIcons";
+import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 
 const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
+  if (isCustomIcon(name)) {
+    const CustomIcon = getCustomIcon(name);
+    return CustomIcon ? <CustomIcon {...props} /> : <Icons.HelpCircle {...props} />;
+  }
   const IconComp = (Icons as unknown as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
   return IconComp ? <IconComp {...props} /> : <Icons.HelpCircle {...props} />;
 };
@@ -21,20 +27,40 @@ const Desktop = memo(function Desktop() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const desktopRef = useRef<HTMLDivElement>(null);
+  const iconsContainerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return;
+
+      if (iconsContainerRef.current) {
+        const iconEls = iconsContainerRef.current.querySelectorAll(":scope > div");
+        gsap.from(iconEls, {
+          y: 30,
+          autoAlpha: 0,
+          duration: DUR.normal,
+          ease: EASE.spring,
+          stagger: 0.08,
+          delay: 0.3,
+        });
+      }
+    },
+    { scope: desktopRef }
+  );
 
   const handleIconDoubleClick = useCallback(
-    (icon: typeof desktopIcons[0]) => {
+    (icon: (typeof desktopIcons)[0]) => {
       if (icon.appId) {
-        dispatch({ type: 'OPEN_WINDOW', appId: icon.appId, viewport: { width: window.innerWidth, height: window.innerHeight } });
+        dispatch({ type: "OPEN_WINDOW", appId: icon.appId, viewport: { width: window.innerWidth, height: window.innerHeight } });
       }
     },
     [dispatch]
   );
 
   const handleIconMouseDown = useCallback(
-    (e: React.MouseEvent, icon: typeof desktopIcons[0]) => {
+    (e: React.MouseEvent, icon: (typeof desktopIcons)[0]) => {
       e.stopPropagation();
-      dispatch({ type: 'SELECT_DESKTOP_ICON', id: icon.id });
+      dispatch({ type: "SELECT_DESKTOP_ICON", id: icon.id });
       if (icon.appId) {
         setDraggingId(icon.id);
         setDragOffset({ x: e.clientX, y: e.clientY });
@@ -57,7 +83,7 @@ const Desktop = memo(function Desktop() {
       const ny = Math.round((icon.position.y + dy) / GRID_Y) * GRID_Y + 16;
 
       dispatch({
-        type: 'UPDATE_DESKTOP_ICON_POSITION',
+        type: "UPDATE_DESKTOP_ICON_POSITION",
         id: draggingId,
         position: { x: Math.max(16, nx), y: Math.max(16, ny) },
       });
@@ -82,82 +108,76 @@ const Desktop = memo(function Desktop() {
       ref={desktopRef}
       className="fixed inset-0 z-10"
       style={{
-        top: 30,
+        top: 44,
         bottom: 50,
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onContextMenu={handleDesktopContextMenu}
-      onClick={() => dispatch({ type: 'SELECT_DESKTOP_ICON', id: null })}
+      onClick={() => dispatch({ type: "SELECT_DESKTOP_ICON", id: null })}
     >
       {/* Desktop Icons */}
-      {desktopIcons.map((icon) => (
-        <div
-          key={icon.id}
-          className="absolute flex flex-col items-center gap-1.5 cursor-pointer group"
-          style={{
-            left: icon.position.x,
-            top: icon.position.y,
-            width: 68,
-            opacity: draggingId === icon.id ? 0.5 : 1,
-            animation: 'iconAppear 350ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}
-          onDoubleClick={() => handleIconDoubleClick(icon)}
-          onMouseDown={(e) => handleIconMouseDown(e, icon)}
-          onContextMenu={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-          }}
-        >
+      <div ref={iconsContainerRef} className="absolute inset-0">
+        {desktopIcons.map((icon) => (
           <div
-            className="flex items-center justify-center transition-all"
+            key={icon.id}
+            className="absolute flex flex-col items-center gap-1.5 cursor-pointer group"
             style={{
-              width: 50,
-              height: 50,
-              borderRadius: 12,
-              background: icon.isSelected
-                ? 'rgba(128,92,255,0.22)'
-                : 'rgba(107,70,223,0.06)',
-              border: icon.isSelected
-                ? '1px solid var(--border-glow)'
-                : '1px solid var(--border-subtle)',
-              boxShadow: icon.isSelected
-                ? 'inset 0 0 20px rgba(112,71,255,0.25), 0 0 18px rgba(128,92,255,0.3)'
-                : 'none',
+              left: icon.position.x,
+              top: icon.position.y,
+              width: 68,
+              opacity: draggingId === icon.id ? 0.5 : 1,
+            }}
+            onDoubleClick={() => handleIconDoubleClick(icon)}
+            onMouseDown={(e) => handleIconMouseDown(e, icon)}
+            onContextMenu={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
             }}
           >
-            <DynamicIcon
-              name={icon.icon}
-              size={26}
+            <div
+              className="flex items-center justify-center transition-all"
               style={{
-                color: icon.isSelected ? 'var(--accent-cyan)' : 'var(--text-primary)',
-                filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(128,92,255,0.4))',
+                width: 50,
+                height: 50,
+                borderRadius: 12,
+                background: icon.isSelected
+                  ? "rgba(216,178,106,0.22)"
+                  : "rgba(216,178,106,0.06)",
+                border: icon.isSelected
+                  ? "1px solid var(--border-glow)"
+                  : "1px solid var(--border-subtle)",
+                boxShadow: icon.isSelected
+                  ? "inset 0 0 20px rgba(216,178,106,0.25), 0 0 18px rgba(216,178,106,0.3)"
+                  : "none",
               }}
-            />
+            >
+              <DynamicIcon
+                name={icon.icon}
+                size={26}
+                style={{
+                  color: icon.isSelected ? "var(--accent-cyan)" : "var(--text-primary)",
+                  filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(216,178,106,0.4))",
+                }}
+              />
+            </div>
+            <span
+              className="font-mono text-center px-1.5 py-0.5 truncate leading-tight"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.1em",
+                maxWidth: 76,
+                color: "#E8E4FF",
+                textShadow: "0 1px 4px rgba(0,0,0,0.95)",
+                background: icon.isSelected ? "rgba(216,178,106,0.30)" : "transparent",
+                borderRadius: 3,
+              }}
+            >
+              {icon.name}
+            </span>
           </div>
-          <span
-            className="font-mono text-center px-1.5 py-0.5 truncate leading-tight"
-            style={{
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              maxWidth: 76,
-              color: '#E8E4FF',
-              textShadow: '0 1px 4px rgba(0,0,0,0.95)',
-              background: icon.isSelected ? 'rgba(128,92,255,0.30)' : 'transparent',
-              borderRadius: 3,
-            }}
-          >
-            {icon.name}
-          </span>
-        </div>
-      ))}
-
-      <style>{`
-        @keyframes iconAppear {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+        ))}
+      </div>
     </div>
   );
 });

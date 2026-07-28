@@ -1,160 +1,187 @@
-import { useEffect, useState, memo } from 'react';
+import { memo, useRef } from "react";
+import { Scarab } from "@/components/Scarab";
+import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 
-const PHASE_INTRO = 0;
-const PHASE_LINK = 1;
-const PHASE_REVEAL = 2;
-const PHASE_DONE = 3;
+const BootSequence = memo(function BootSequence({
+  onComplete,
+}: {
+  onComplete: () => void;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const scarabWrapRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLDivElement>(null);
+  const barWrapRef = useRef<HTMLDivElement>(null);
+  const barFillRef = useRef<HTMLDivElement>(null);
 
-const BOOT_LOG = [
-  '> initializing obsidian lattice...',
-  '> mounting neural membrane [0x3a:f1]...',
-  '> veil channel ... OK',
-  '> coherence sync ... 98.7%',
-  '> NEURAL LINK ESTABLISHED',
-];
-
-const BootSequence = memo(function BootSequence({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<number>(PHASE_INTRO);
-  const [progress, setProgress] = useState(0);
-  const [logIndex, setLogIndex] = useState(0);
-  const [coherence, setCoherence] = useState(0);
-
-  useEffect(() => {
-    if (phase !== PHASE_INTRO) return;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setPhase(PHASE_LINK), 600));
-    return () => timers.forEach(clearTimeout);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== PHASE_LINK) return;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    let p = 0;
-    const interval = setInterval(() => {
-      p += Math.random() * 11 + 4;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(interval);
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) {
+        onComplete();
+        return;
       }
-      setProgress(p);
-      setCoherence(p);
-      setLogIndex(Math.min(BOOT_LOG.length - 1, Math.floor((p / 100) * BOOT_LOG.length)));
-    }, 130);
-    timers.push(interval as unknown as ReturnType<typeof setTimeout>);
-    timers.push(setTimeout(() => setPhase(PHASE_REVEAL), 2600));
-    timers.push(setTimeout(() => setPhase(PHASE_DONE), 3300));
-    timers.push(setTimeout(() => onComplete(), 3600));
-    return () => timers.forEach(clearTimeout);
-  }, [phase, onComplete]);
 
-  if (phase === PHASE_DONE) return null;
+      const tl = gsap.timeline({ onComplete });
 
-  const revealing = phase === PHASE_REVEAL;
+      tl.set(
+        [scarabWrapRef.current, titleRef.current, subtitleRef.current, barWrapRef.current],
+        { autoAlpha: 0 }
+      );
+
+      tl.fromTo(
+        glowRef.current,
+        { scale: 0.6, autoAlpha: 0 },
+        { scale: 1, autoAlpha: 1, duration: DUR.reveal, ease: EASE.decelerate },
+        0
+      );
+
+      tl.fromTo(
+        scarabWrapRef.current,
+        { scale: 0.8, autoAlpha: 0 },
+        {
+          scale: 1,
+          autoAlpha: 1,
+          duration: DUR.reveal,
+          ease: EASE.spring,
+        },
+        0.1
+      );
+
+      tl.fromTo(
+        titleRef.current,
+        { y: 24, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: DUR.normal, ease: EASE.decelerate },
+        0.5
+      );
+
+      tl.fromTo(
+        subtitleRef.current,
+        { y: 16, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: DUR.normal, ease: EASE.decelerate },
+        0.75
+      );
+
+      tl.fromTo(
+        barWrapRef.current,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: DUR.fast, ease: EASE.decelerate },
+        1.0
+      );
+
+      tl.fromTo(
+        barFillRef.current,
+        { xPercent: -100 },
+        { xPercent: 100, duration: 1.6, ease: "power1.inOut" },
+        1.0
+      );
+
+      tl.to(
+        [scarabWrapRef.current, titleRef.current, subtitleRef.current, barWrapRef.current],
+        {
+          autoAlpha: 0,
+          scale: 1.02,
+          duration: DUR.slow,
+          ease: EASE.decelerate,
+          stagger: 0.05,
+        },
+        2.8
+      );
+
+      tl.to(
+        glowRef.current,
+        { autoAlpha: 0, duration: DUR.slow, ease: EASE.decelerate },
+        2.9
+      );
+    },
+    { scope: rootRef, dependencies: [onComplete] }
+  );
 
   return (
     <div
+      ref={rootRef}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
       style={{
-        background: 'radial-gradient(circle at center, #140d2a 0%, #05030a 38%, #010104 78%)',
-        transition: 'clip-path 700ms cubic-bezier(0,0,0.2,1), opacity 400ms ease',
-        clipPath: revealing ? 'circle(0% at 50% 50%)' : 'circle(150% at 50% 50%)',
-        opacity: revealing ? 0 : 1,
+        gap: 34,
+        background:
+          "radial-gradient(ellipse at center, #0d0a06 0%, #020101 80%)",
       }}
     >
-      {/* Rotating glyph mark */}
-      <div className="relative flex items-center justify-center" style={{ width: 140, height: 140 }}>
-        <svg
-          width="140"
-          height="140"
-          viewBox="0 0 140 140"
-          style={{
-            animation: 'glyphRotate 8s linear infinite',
-            filter: 'drop-shadow(0 0 22px rgba(128,92,255,0.7))',
-          }}
-        >
-          <polygon
-            points="70,12 128,70 70,128 12,70"
-            fill="none"
-            stroke="rgba(147,116,255,0.35)"
-            strokeWidth="1"
-          />
-          <polygon
-            points="70,28 112,70 70,112 28,70"
-            fill="none"
-            stroke="rgba(87,246,225,0.4)"
-            strokeWidth="1"
-          />
-          <circle cx="70" cy="70" r="3" fill="#ece9ff" />
-        </svg>
-        <div
-          className="absolute font-display font-extrabold"
-          style={{
-            fontSize: 38,
-            color: '#ece9ff',
-            textShadow: '0 0 24px rgba(128,92,255,0.9)',
-            animation: 'corePulse 2.4s ease-in-out infinite',
-          }}
-        >
-          S
-        </div>
+      {/* Ambient glow */}
+      <div
+        ref={glowRef}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 400,
+          height: 400,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 60%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Scarab emblem */}
+      <div ref={scarabWrapRef}>
+        <Scarab size={180} />
       </div>
 
-      <h1
-        className="font-display font-extrabold tracking-[0.06em] mt-8"
+      {/* Brand title */}
+      <div
+        ref={titleRef}
+        className="font-display"
         style={{
-          fontSize: 34,
-          color: '#ece9ff',
-          letterSpacing: '0.08em',
+          fontSize: "2.2rem",
+          letterSpacing: "0.5em",
+          color: "var(--gilt-bright)",
+          textIndent: "0.5em",
+          textShadow: "0 0 24px rgba(201,168,76,0.5)",
         }}
       >
-        SERK3T<span style={{ color: '#8b84a7', fontWeight: 500 }}>OS</span>
-      </h1>
-      <p
-        className="font-mono mt-2"
-        style={{ fontSize: 10, letterSpacing: '0.3em', color: '#79718f', textTransform: 'uppercase' }}
+        AURA<span style={{ color: "var(--gilt)" }}>DESK</span>
+      </div>
+
+      {/* Subtitle */}
+      <div
+        ref={subtitleRef}
+        className="font-serif"
+        style={{
+          fontSize: "0.95rem",
+          letterSpacing: "0.4em",
+          color: "var(--gilt-dim)",
+          textIndent: "0.4em",
+        }}
       >
-        THE OBSCURE INTERFACE
-      </p>
+        THE SACRED WORKSPACE AWAKENS
+      </div>
 
-      {/* Neural-link log */}
-      {phase >= PHASE_LINK && (
-        <div className="mt-9 flex flex-col items-center" style={{ minWidth: 320 }}>
-          <div className="w-[280px] h-[2px] mb-3" style={{ background: 'rgba(128,92,255,0.18)' }}>
-            <div
-              style={{
-                width: `${progress}%`,
-                height: '100%',
-                background: 'linear-gradient(90deg, #6245d9, #805cff, #57f6e1)',
-                boxShadow: '0 0 12px rgba(128,92,255,0.8)',
-                transition: 'width 130ms linear',
-              }}
-            />
-          </div>
-          <div
-            className="font-mono"
-            style={{ fontSize: 10, color: '#9388bd', letterSpacing: '0.12em', minHeight: 16 }}
-          >
-            {BOOT_LOG[logIndex]}
-          </div>
-
-          {/* Telemetry row */}
-          <div
-            className="flex items-center gap-6 mt-5 font-mono"
-            style={{ fontSize: 9, letterSpacing: '0.18em', color: '#6e6780', textTransform: 'uppercase' }}
-          >
-            <span>
-              CORE <b style={{ color: '#70ffd3' }}>ONLINE</b>
-            </span>
-            <span>
-              COHERENCE <b style={{ color: '#805cff' }}>{coherence.toFixed(1)}%</b>
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* scanlines */}
-      <div className="absolute inset-0 overlay-scanlines pointer-events-none" style={{ opacity: 0.35 }} />
-      <div className="absolute inset-0 overlay-vignette pointer-events-none" />
+      {/* Loading bar */}
+      <div
+        ref={barWrapRef}
+        style={{
+          width: 220,
+          height: 2,
+          background: "rgba(201,168,76,0.12)",
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: 2,
+        }}
+      >
+        <div
+          ref={barFillRef}
+          style={{
+            position: "absolute",
+            top: 0,
+            height: "100%",
+            width: "40%",
+            background:
+              "linear-gradient(90deg, transparent, var(--gilt-bright), transparent)",
+          }}
+        />
+      </div>
     </div>
   );
 });

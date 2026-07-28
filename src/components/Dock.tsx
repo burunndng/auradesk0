@@ -1,15 +1,21 @@
 // ============================================================
-// Dock — Bottom dock with pinned apps, open indicators, trash
+// Dock — Floating spatial-glass dock with pinned apps, open indicators, trash
 // ============================================================
 
-import { useCallback, memo, useState, useEffect, useRef } from 'react';
-import { useOS } from '@/hooks/useOSStore';
-import { getAppById } from '@/apps/registry';
-import { LayoutGrid, Trash2 } from 'lucide-react';
-import * as Icons from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
+import { useCallback, memo, useState, useEffect, useRef } from "react";
+import { useOS } from "@/hooks/useOSStore";
+import { getAppById } from "@/apps/registry";
+import { LayoutGrid, Trash2 } from "lucide-react";
+import * as Icons from "lucide-react";
+import type { LucideProps } from "lucide-react";
+import { getCustomIcon, isCustomIcon } from "@/components/CustomIcons";
+import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 
 const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
+  if (isCustomIcon(name)) {
+    const CustomIcon = getCustomIcon(name);
+    return CustomIcon ? <CustomIcon {...props} /> : null;
+  }
   const IconComp = (Icons as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
   return IconComp ? <IconComp {...props} /> : null;
 };
@@ -21,6 +27,35 @@ const Dock = memo(function Dock() {
   const [hoveredApp, setHoveredApp] = useState<string | null>(null);
   const [, setTooltipPos] = useState({ x: 0, y: 0 });
   const bounceDispatchedRef = useRef<Set<string>>(new Set());
+  const dockRef = useRef<HTMLDivElement>(null);
+  const iconsRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return;
+
+      gsap.from(dockRef.current, {
+        y: 60,
+        autoAlpha: 0,
+        duration: DUR.slow,
+        ease: EASE.spring,
+        delay: 0.2,
+      });
+
+      if (iconsRef.current) {
+        const iconEls = iconsRef.current.querySelectorAll(":scope > div");
+        gsap.from(iconEls, {
+          y: 20,
+          autoAlpha: 0,
+          duration: DUR.normal,
+          ease: EASE.springStrong,
+          stagger: 0.05,
+          delay: 0.4,
+        });
+      }
+    },
+    { scope: dockRef }
+  );
 
   // Bounce animation: when a dock item is flagged bounce:true in the store,
   // start its local animation and clear the flag so the effect doesn't loop.
@@ -35,7 +70,7 @@ const Dock = memo(function Dock() {
       bouncing.forEach((id) => next.add(id));
       return next;
     });
-    bouncing.forEach((id) => dispatch({ type: 'BOUNCE_DOCK_ITEM', appId: id }));
+    bouncing.forEach((id) => dispatch({ type: "BOUNCE_DOCK_ITEM", appId: id }));
     const timer = setTimeout(() => {
       setBouncingItems(new Set());
       bouncing.forEach((id) => bounceDispatchedRef.current.delete(id));
@@ -45,24 +80,23 @@ const Dock = memo(function Dock() {
 
   const handleAppClick = useCallback(
     (appId: string) => {
-      const hasOpenWindow = state.windows.some((w) => w.appId === appId && w.state !== 'minimized');
+      const hasOpenWindow = state.windows.some((w) => w.appId === appId && w.state !== "minimized");
       if (hasOpenWindow) {
-        // Focus existing window
-        const win = state.windows.find((w) => w.appId === appId && w.state !== 'minimized');
-        if (win) dispatch({ type: 'FOCUS_WINDOW', windowId: win.id });
+        const win = state.windows.find((w) => w.appId === appId && w.state !== "minimized");
+        if (win) dispatch({ type: "FOCUS_WINDOW", windowId: win.id });
       } else {
-        dispatch({ type: 'OPEN_WINDOW', appId, viewport: { width: window.innerWidth, height: window.innerHeight } });
+        dispatch({ type: "OPEN_WINDOW", appId, viewport: { width: window.innerWidth, height: window.innerHeight } });
       }
     },
     [dispatch, state.windows]
   );
 
   const handleShowApps = useCallback(() => {
-    dispatch({ type: 'TOGGLE_APP_LAUNCHER' });
+    dispatch({ type: "TOGGLE_APP_LAUNCHER" });
   }, [dispatch]);
 
   const handleTrashClick = useCallback(() => {
-    dispatch({ type: 'OPEN_WINDOW', appId: 'auraos', viewport: { width: window.innerWidth, height: window.innerHeight } });
+    dispatch({ type: "OPEN_WINDOW", appId: "auraos", viewport: { width: window.innerWidth, height: window.innerHeight } });
   }, [dispatch]);
 
   const pinnedItems = dockItems.filter((d) => d.isPinned);
@@ -88,67 +122,85 @@ const Dock = memo(function Dock() {
         }}
         onMouseLeave={() => setHoveredApp(null)}
       >
-        {/* Tooltip */}
+        {/* Tooltip — glass pill */}
         {isHovered && (
           <div
-            className="absolute bottom-full mb-2 px-2 py-1 whitespace-nowrap z-[4000] font-mono"
+            className="absolute bottom-full mb-2.5 whitespace-nowrap z-[4000] font-mono pointer-events-none"
             style={{
-              background: 'var(--bg-tooltip)',
-              color: 'var(--text-primary)',
-              boxShadow: 'var(--shadow-sm)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 4,
+              padding: "3px 10px",
+              background: "var(--bg-tooltip)",
+              color: "var(--lapis-dim)",
+              boxShadow: "var(--shadow-sm)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-full)",
               fontSize: 9,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              animation: 'tooltipAppear 100ms ease',
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
             }}
           >
-            {isTrash ? 'Recycle' : app?.name || appId}
+            {isTrash ? "Recycle" : app?.name || appId}
           </div>
         )}
 
         {/* Icon */}
         <button
-          onClick={() => isTrash ? handleTrashClick() : handleAppClick(appId)}
-          className="flex items-center justify-center transition-all"
+          onClick={() => (isTrash ? handleTrashClick() : handleAppClick(appId))}
+          className="flex items-center justify-center"
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            background: isHovered ? 'rgba(107,70,223,0.14)' : 'transparent',
-            border: `1px solid ${isHovered ? 'var(--border-glow)' : 'transparent'}`,
-            boxShadow: isHovered ? 'inset 0 0 18px rgba(112,71,255,0.18), 0 0 14px rgba(102,61,244,0.16)' : 'none',
-            transform: isBouncing ? 'translateY(-6px)' : 'scale(1)',
-            transition: isBouncing ? 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)' : 'all 150ms ease',
-            opacity: isTrash ? 0.65 : isOpen ? 1 : 0.78,
+            width: 42,
+            height: 42,
+            borderRadius: "var(--radius-md)",
+            background: isHovered ? "var(--bg-hover)" : "transparent",
+            border: `1px solid ${isHovered ? "var(--border-strong)" : "transparent"}`,
+            boxShadow: isHovered
+              ? "inset 0 0 16px rgba(127,161,255,0.18), var(--glow-lapis), inset 0 1px 0 rgba(255,255,255,0.06)"
+              : "inset 0 1px 0 rgba(255,255,255,0.03)",
+            transform: isBouncing
+              ? "translateY(-8px)"
+              : isHovered
+                ? "scale(1.16)"
+                : "scale(1)",
+            transition: isBouncing
+              ? "transform 400ms var(--ease-spring)"
+              : "transform var(--duration-normal) var(--ease-spring), background var(--duration-fast) var(--ease-default), box-shadow var(--duration-normal) var(--ease-default), border-color var(--duration-fast) var(--ease-default)",
+            opacity: isTrash ? 0.7 : isOpen ? 1 : 0.82,
           }}
         >
           {isTrash ? (
-            <Trash2 size={20} style={{ color: 'var(--text-secondary)' }} />
-          ) : (
-            <DynamicIcon
-              name={app?.icon || 'HelpCircle'}
+            <Trash2
               size={20}
               style={{
-                color: isHovered ? 'var(--text-primary)' : 'var(--text-secondary)',
-                filter: isOpen ? 'drop-shadow(0 0 6px rgba(128,92,255,0.6))' : 'none',
+                color: isHovered ? "var(--lapis-bright)" : "var(--text-secondary)",
+                transition: "color var(--duration-fast) var(--ease-default)",
+              }}
+            />
+          ) : (
+            <DynamicIcon
+              name={app?.icon || "HelpCircle"}
+              size={20}
+              style={{
+                color: isHovered ? "var(--lapis-bright)" : "var(--text-secondary)",
+                filter: isOpen ? "drop-shadow(0 0 6px var(--lapis-glow))" : "none",
+                transition: "color var(--duration-fast) var(--ease-default)",
               }}
             />
           )}
         </button>
 
-        {/* Active indicator */}
+        {/* Active / running indicator — precious gilt */}
         {isOpen && (
           <div
-            className="absolute -bottom-0.5"
+            className="absolute"
             style={{
-              width: isFocused ? 14 : 6,
-              height: 2,
-              borderRadius: 2,
-              background: isFocused ? 'var(--accent-cyan)' : 'var(--text-tertiary)',
-              boxShadow: isFocused ? '0 0 8px var(--accent-cyan)' : 'none',
-              transition: 'width 200ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+              bottom: -3,
+              width: isFocused ? 16 : 5,
+              height: isFocused ? 3 : 5,
+              borderRadius: "var(--radius-full)",
+              background: isFocused ? "var(--gilt-bright)" : "var(--gilt)",
+              boxShadow: isFocused ? "var(--glow-gilt)" : "0 0 6px var(--gilt-glow)",
+              transition: "width var(--duration-normal) var(--ease-spring), height var(--duration-normal) var(--ease-spring)",
             }}
           />
         )}
@@ -158,69 +210,58 @@ const Dock = memo(function Dock() {
 
   return (
     <div
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-0.5 px-2"
+      ref={dockRef}
+      className="fixed left-1/2 -translate-x-1/2 z-[150] flex items-center gap-0.5 px-2.5"
       style={{
-        height: 50,
-        background: 'var(--bg-panel)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '14px 14px 0 0',
-        border: '1px solid var(--border-subtle)',
-        borderBottom: 'none',
-        boxShadow: '0 -8px 32px rgba(0,0,0,0.5)',
-        animation: 'dockSlideUp 300ms cubic-bezier(0, 0, 0.2, 1)',
+        bottom: 14,
+        height: 56,
+        background: "var(--bg-panel)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        borderRadius: "var(--radius-xl)",
+        border: "1px solid var(--border-default)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), var(--shadow-lg)",
       }}
     >
       {/* Show Applications button */}
       <button
         onClick={handleShowApps}
-        className="flex items-center justify-center transition-all"
+        className="flex items-center justify-center"
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: state.appLauncherOpen ? 'rgba(107,70,223,0.18)' : 'transparent',
-          border: `1px solid ${state.appLauncherOpen ? 'var(--border-glow)' : 'transparent'}`,
-          color: state.appLauncherOpen ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+          width: 42,
+          height: 42,
+          borderRadius: "var(--radius-md)",
+          background: state.appLauncherOpen ? "var(--bg-active)" : "transparent",
+          border: `1px solid ${state.appLauncherOpen ? "var(--border-strong)" : "transparent"}`,
+          color: state.appLauncherOpen ? "var(--lapis-bright)" : "var(--text-secondary)",
+          boxShadow: state.appLauncherOpen ? "inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
+          transition: "background var(--duration-fast) var(--ease-default), border-color var(--duration-fast) var(--ease-default), color var(--duration-fast) var(--ease-default)",
         }}
       >
         <LayoutGrid size={19} />
       </button>
 
       {/* Separator */}
-      <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 24 }} />
+      <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 26 }} />
 
       {/* Pinned apps */}
-      {pinnedItems.map((item) => renderDockIcon(item.appId))}
+      <div ref={iconsRef} className="flex items-center gap-0.5">
+        {pinnedItems.map((item) => renderDockIcon(item.appId))}
+      </div>
 
       {/* Separator (if there are open unpinned apps) */}
       {openUnpinned.length > 0 && (
-        <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 24 }} />
+        <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 26 }} />
       )}
 
       {/* Open unpinned apps */}
       {openUnpinned.map((item) => renderDockIcon(item.appId))}
 
       {/* Separator */}
-      <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 24 }} />
+      <div className="mx-1 shrink-0 hairline" style={{ width: 1, height: 26 }} />
 
       {/* Trash */}
-      {renderDockIcon('trash', true)}
-
-      <style>{`
-        @keyframes dockSlideUp {
-          from { transform: translateX(-50%) translateY(48px); opacity: 0; }
-          to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        @keyframes tooltipAppear {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes dotAppear {
-          from { transform: scale(0); }
-          to { transform: scale(1); }
-        }
-      `}</style>
+      {renderDockIcon("trash", true)}
     </div>
   );
 });
