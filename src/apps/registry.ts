@@ -31,6 +31,19 @@ export const APP_REGISTRY: AppDefinition[] = [
     permissions: ['microphone', 'camera'],
   },
   {
+    id: 'music-viz',
+    name: 'Resonance',
+    icon: 'MusicViz',
+    category: 'Audio',
+    description: 'Audio-reactive field visualizer — SerK3t signal membrane',
+    defaultSize: { width: 1200, height: 780 },
+    minSize: { width: 800, height: 520 },
+    singleton: true,
+    url: 'https://music-viz-sserket.vercel.app/visualizer',
+    embeddable: true,
+    permissions: ['microphone', 'autoplay'],
+  },
+  {
     id: 'reality-architecture',
     name: "Reality's Architecture",
     icon: 'RealityArchitecture',
@@ -42,6 +55,26 @@ export const APP_REGISTRY: AppDefinition[] = [
     url: 'https://phoked2.vercel.app/',
     embeddable: true,
   },
+  {
+    id: 'grimoire',
+    name: 'Grimoire',
+    icon: 'Grimoire',
+    category: 'Productivity',
+    description: 'Sacred note app for AOS & Reality Architect practice',
+    defaultSize: { width: 1024, height: 768 },
+    minSize: { width: 720, height: 520 },
+    singleton: true,
+  },
+  {
+    id: 'notes',
+    name: 'Notes',
+    icon: 'Feather',
+    category: 'Productivity',
+    description: 'A quiet place to think and write',
+    defaultSize: { width: 880, height: 620 },
+    minSize: { width: 560, height: 420 },
+    singleton: true,
+  },
 ];
 
 export const getAppById = (id: string): AppDefinition | undefined =>
@@ -50,4 +83,5 @@ export const getAppById = (id: string): AppDefinition | undefined =>
 export const getAppsByCategory = (category: string): AppDefinition[] =>
   APP_REGISTRY.filter((a) => a.category === category);
 
-export const getDefaultDockApps = (): string[] => ['auraos', 'bliss', 'reality-architecture'];
+export const getDefaultDockApps = (): string[] =>
+  ['auraos', 'bliss', 'music-viz', 'reality-architecture', 'grimoire'];

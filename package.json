@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "fixtures": "vite-node scripts/export-concord-fixtures.ts",
     "test:ui": "vitest --ui",
-    "lint:ci": "eslint src scripts"
+    "lint:ci": "eslint src"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

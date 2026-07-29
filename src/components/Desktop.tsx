@@ -4,19 +4,8 @@
 
 import { useCallback, memo, useState, useRef } from "react";
 import { useOS } from "@/hooks/useOSStore";
-import * as Icons from "lucide-react";
-import type { LucideProps } from "lucide-react";
-import { getCustomIcon, isCustomIcon } from "@/components/CustomIcons";
 import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
-
-const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
-  if (isCustomIcon(name)) {
-    const CustomIcon = getCustomIcon(name);
-    return CustomIcon ? <CustomIcon {...props} /> : <Icons.HelpCircle {...props} />;
-  }
-  const IconComp = (Icons as unknown as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
-  return IconComp ? <IconComp {...props} /> : <Icons.HelpCircle {...props} />;
-};
+import { AppIcon as DynamicIcon } from "@/components/AppIcon";
 
 const GRID_X = 80;
 const GRID_Y = 90;

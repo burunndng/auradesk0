@@ -4,10 +4,13 @@
 
 import type { LucideProps } from 'lucide-react';
 import { RealityArchitectureIcon } from '@/components/RealityArchitectureIcon';
+import { MusicVizIcon } from '@/components/MusicVizIcon';
+import { GrimoireIcon } from '@/apps/Grimoire/components/GrimoireIcon';
 
-// Map of custom icon names to their components
 const CUSTOM_ICONS: Record<string, React.ComponentType<LucideProps>> = {
   RealityArchitecture: RealityArchitectureIcon,
+  MusicViz: MusicVizIcon,
+  Grimoire: GrimoireIcon,
 };
 
 export const getCustomIcon = (name: string): React.ComponentType<LucideProps> | null => {

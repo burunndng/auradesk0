@@ -5,24 +5,14 @@
 import { useCallback, useRef, useState, memo, useEffect } from "react";
 import type { Window } from "@/types";
 import { useOS } from "@/hooks/useOSStore";
-import * as Icons from "lucide-react";
-import type { LucideProps } from "lucide-react";
-import { getCustomIcon, isCustomIcon } from "@/components/CustomIcons";
+import { Minus, Copy, Square, X } from "lucide-react";
+import { AppIcon as DynamicIcon } from "@/components/AppIcon";
 import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 
 const TOP_PANEL_HEIGHT = 44;
 const RESIZE_HANDLE = 8;
 const MIN_W = 320;
 const MIN_H = 200;
-
-const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
-  if (isCustomIcon(name)) {
-    const CustomIcon = getCustomIcon(name);
-    return CustomIcon ? <CustomIcon {...props} /> : <Icons.HelpCircle {...props} />;
-  }
-  const IconComp = (Icons as unknown as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
-  return IconComp ? <IconComp {...props} /> : <Icons.HelpCircle {...props} />;
-};
 
 interface WindowFrameProps {
   window: Window;
@@ -472,7 +462,7 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
             }}
             title="Minimize"
           >
-            <Icons.Minus size={12} />
+            <Minus size={12} />
           </button>
           <button
             onClick={handleMaximize}
@@ -488,7 +478,7 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
             }}
             title={isMaximized ? "Restore" : "Maximize"}
           >
-            {isMaximized ? <Icons.Copy size={11} /> : <Icons.Square size={11} />}
+            {isMaximized ? <Copy size={11} /> : <Square size={11} />}
           </button>
           <button
             onClick={handleClose}
@@ -511,7 +501,7 @@ const WindowFrame = memo(function WindowFrame({ window: win, children }: WindowF
             }}
             title="Close"
           >
-            <Icons.X size={13} />
+            <X size={13} />
           </button>
         </div>
       </div>

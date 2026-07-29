@@ -6,19 +6,8 @@ import { useCallback, memo, useState, useEffect, useRef } from "react";
 import { useOS } from "@/hooks/useOSStore";
 import { getAppById } from "@/apps/registry";
 import { LayoutGrid, Trash2 } from "lucide-react";
-import * as Icons from "lucide-react";
-import type { LucideProps } from "lucide-react";
-import { getCustomIcon, isCustomIcon } from "@/components/CustomIcons";
+import { AppIcon as DynamicIcon } from "@/components/AppIcon";
 import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
-
-const DynamicIcon = ({ name, ...props }: { name: string } & LucideProps) => {
-  if (isCustomIcon(name)) {
-    const CustomIcon = getCustomIcon(name);
-    return CustomIcon ? <CustomIcon {...props} /> : null;
-  }
-  const IconComp = (Icons as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
-  return IconComp ? <IconComp {...props} /> : null;
-};
 
 const Dock = memo(function Dock() {
   const { state, dispatch } = useOS();

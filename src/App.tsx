@@ -12,6 +12,7 @@ import AppLauncher from '@/components/AppLauncher';
 import WindowManager from '@/components/WindowManager';
 import SacredBackground from '@/components/SacredBackground';
 import { ScarabDefs } from '@/components/Scarab';
+import { AppIcon } from '@/components/AppIcon';
 
 function AppShell() {
   const { state, dispatch } = useOS();
@@ -131,13 +132,13 @@ function AppShell() {
           {state.isAltTabbing && (
             <div
               className="fixed inset-0 z-[5000] flex items-center justify-center pointer-events-none"
-              style={{ background: 'rgba(3,2,7,0.55)' }}
+              style={{ background: 'rgba(5, 8, 17, 0.62)' }}
             >
               <div
                 className="flex items-center gap-3 px-6 py-4 pointer-events-auto surface-glass"
                 style={{
-                  borderRadius: 14,
-                  animation: 'alttabAppear 150ms ease',
+                  borderRadius: 'var(--radius-xl)',
+                  animation: 'alttabAppear 220ms cubic-bezier(0.32, 0.72, 0, 1)',
                 }}
               >
                 {state.windows
@@ -148,30 +149,38 @@ function AppShell() {
                     return (
                       <div
                         key={w.id}
-                        className="flex flex-col items-center gap-2 p-3 transition-all"
+                        className="flex flex-col items-center gap-2 p-3"
                         style={{
-                          borderRadius: 12,
-                          background: isSelected ? 'rgba(128,92,255,0.18)' : 'transparent',
+                          borderRadius: 'var(--radius-lg)',
+                          background: isSelected ? 'var(--bg-selected)' : 'transparent',
                           border: isSelected ? '1px solid var(--border-glow)' : '1px solid transparent',
-                          boxShadow: isSelected ? '0 0 20px rgba(128,92,255,0.35)' : 'none',
-                          width: 80,
+                          boxShadow: isSelected ? 'var(--glow-lapis)' : 'none',
+                          width: 88,
+                          transition: 'background 200ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 200ms cubic-bezier(0.32, 0.72, 0, 1)',
                         }}
                       >
-                        <div className="flex items-center justify-center"
+                        <div
+                          className="flex items-center justify-center"
                           style={{
                             width: 44,
                             height: 44,
-                            borderRadius: 10,
-                            background: 'rgba(107,70,223,0.12)',
+                            borderRadius: 'var(--radius-md)',
+                            background: isSelected ? 'rgba(127,161,255,0.16)' : 'var(--bg-hover)',
                             border: '1px solid var(--border-subtle)',
-                          }}>
-                          <span style={{ fontSize: 18 }}>
-                            {app?.icon === 'Monitor' && '◈'}
-                            {app?.icon === 'Music' && '◉'}
-                            {!['Monitor', 'Music'].includes(app?.icon || '') && '◯'}
-                          </span>
+                            color: isSelected ? 'var(--lapis-bright)' : 'var(--text-secondary)',
+                          }}
+                        >
+                          <AppIcon name={app?.icon || w.icon || 'Monitor'} size={22} strokeWidth={1.4} />
                         </div>
-                        <span className="font-mono text-center truncate" style={{ fontSize: 8, letterSpacing: '0.1em', color: 'var(--text-primary)', maxWidth: 64 }}>
+                        <span
+                          className="font-mono text-center truncate"
+                          style={{
+                            fontSize: 8,
+                            letterSpacing: '0.1em',
+                            color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                            maxWidth: 72,
+                          }}
+                        >
                           {w.title}
                         </span>
                       </div>
@@ -183,8 +192,8 @@ function AppShell() {
 
           <style>{`
             @keyframes alttabAppear {
-              from { opacity: 0; transform: scale(0.9); }
-              to { opacity: 1; transform: scale(1); }
+              from { opacity: 0; transform: scale(0.94) translateY(8px); }
+              to { opacity: 1; transform: scale(1) translateY(0); }
             }
           `}</style>
         </div>

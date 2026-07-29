@@ -39,6 +39,9 @@ const createWindow = (state: OSState, appId: string, title?: string, viewport?: 
 const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'desk-auraos', name: 'AuraOS', icon: 'Monitor', appId: 'auraos', position: { x: 16, y: 16 }, isSelected: false },
   { id: 'desk-bliss', name: 'BLISS', icon: 'Music', appId: 'bliss', position: { x: 16, y: 106 }, isSelected: false },
+  { id: 'desk-music-viz', name: 'Resonance', icon: 'MusicViz', appId: 'music-viz', position: { x: 16, y: 196 }, isSelected: false },
+  { id: 'desk-grimoire', name: 'Grimoire', icon: 'Grimoire', appId: 'grimoire', position: { x: 16, y: 286 }, isSelected: false },
+  { id: 'desk-notes', name: 'Notes', icon: 'Feather', appId: 'notes', position: { x: 16, y: 376 }, isSelected: false },
 ];
 
 const createInitialDockItems = (): DockItem[] => {
@@ -53,11 +56,30 @@ const createInitialDockItems = (): DockItem[] => {
 };
 
 const loadDesktopIcons = (): DesktopIcon[] => {
+  let icons = defaultDesktopIcons;
   try {
     const saved = localStorage.getItem('serk3tos_desktop_icons');
-    if (saved) return JSON.parse(saved) as DesktopIcon[];
+    if (saved) icons = JSON.parse(saved) as DesktopIcon[];
   } catch { /* ignore */ }
-  return defaultDesktopIcons;
+
+  // Merge missing registry desktop shortcuts (e.g. newly added apps)
+  const byAppId = new Set(icons.map((i) => i.appId).filter(Boolean));
+  const maxY = icons.reduce((m, i) => Math.max(m, i.position.y), 0);
+  let nextY = maxY + 90;
+  const merged = [...icons];
+  for (const def of defaultDesktopIcons) {
+    if (def.appId && !byAppId.has(def.appId)) {
+      merged.push({ ...def, id: def.id, position: { x: 16, y: nextY }, isSelected: false });
+      nextY += 90;
+    } else if (def.appId) {
+      // Keep saved position; sync name/icon from defaults
+      const idx = merged.findIndex((i) => i.appId === def.appId);
+      if (idx >= 0) {
+        merged[idx] = { ...merged[idx], name: def.name, icon: def.icon };
+      }
+    }
+  }
+  return merged;
 };
 
 const initialState: OSState = {
@@ -68,7 +90,7 @@ const initialState: OSState = {
   desktopIcons: loadDesktopIcons(),
   theme: {
     mode: 'dark',
-    accent: '#7C4DFF',
+    accent: '#7fa1ff',
     wallpaper: '/wallpaper-default.jpg',
   },
   dockItems: createInitialDockItems(),
