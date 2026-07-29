@@ -2,7 +2,7 @@
 // Desktop — Wallpaper + draggable desktop icons + context menu
 // ============================================================
 
-import { useCallback, memo, useState, useRef } from "react";
+import { useCallback, memo, useState, useRef, useEffect } from "react";
 import { useOS } from "@/hooks/useOSStore";
 import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 import { AppIcon as DynamicIcon } from "@/components/AppIcon";

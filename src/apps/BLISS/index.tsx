@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Music, AudioLines, ExternalLink, Check } from 'lucide-react';
 
-const BLISS_URL = 'https://bliss-fghfghs-projects.vercel.app/';
+const BLISS_URL = 'https://elder-plinius.github.io/ENTHEA/';
 
 export default function BLISS() {
   const [copied, setCopied] = useState(false);
