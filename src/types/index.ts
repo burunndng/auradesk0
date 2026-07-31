@@ -53,6 +53,8 @@ export interface AppDefinition {
   url?: string;
   embeddable?: boolean;
   permissions?: string[];
+  // EASTER EGG — hidden from launcher, dock, and desktop grid
+  hidden?: boolean;
 }
 
 // --------------------------------------------------------

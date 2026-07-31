@@ -8,13 +8,11 @@ import AppFrame from '@/components/AppFrame';
 import NotImplemented from '@/components/NotImplemented';
 import AuraOS from '@/apps/AuraOS';
 import BLISS from '@/apps/BLISS';
-import Grimoire from '@/apps/Grimoire';
 import Notes from '@/apps/Notes';
 
 const LOCAL_APPS: Record<string, FC> = {
   auraos: AuraOS,
   bliss: BLISS,
-  grimoire: Grimoire,
   notes: Notes,
 };
 

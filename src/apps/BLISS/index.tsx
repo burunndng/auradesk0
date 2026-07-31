@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Music, AudioLines, ExternalLink, Check } from 'lucide-react';
 
-const BLISS_URL = 'https://elder-plinius.github.io/ENTHEA/';
+const BLISS_URL = 'https://ai.studio/apps/b184463c-974f-4811-b29d-65bb33f2804b';
 
 export default function BLISS() {
   const [copied, setCopied] = useState(false);
@@ -46,8 +46,7 @@ export default function BLISS() {
           BLISS
         </div>
         <p className="font-mono max-w-[420px]" style={{ fontSize: 11, lineHeight: 1.9, letterSpacing: '0.06em', color: 'var(--text-secondary)' }}>
-          Browser-based DAW with psychedelic visuals. BLISS runs in its own window because its host blocks in-app embedding.
-        </p>
+          Browser-based DAW with psychedelic visuals. BLISS runs in its own window because its host blocks in-app embedding.        </p>
         <p className="font-mono max-w-[340px]" style={{ fontSize: 9, letterSpacing: '0.14em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
           // launch externally to play
         </p>

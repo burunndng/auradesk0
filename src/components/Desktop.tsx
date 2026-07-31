@@ -167,6 +167,26 @@ const Desktop = memo(function Desktop() {
           </div>
         ))}
       </div>
+
+      {/* Dark Platinium Egg — hidden ENTHEA-VIZ easter egg */}
+      <button
+        onClick={() => dispatch({ type: "OPEN_WINDOW", appId: "enthea-viz", viewport: { width: window.innerWidth, height: window.innerHeight } })}
+        className="absolute cursor-pointer transition-all duration-300"
+        style={{
+          right: 32,
+          bottom: 32,
+          width: 24,
+          height: 24,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(179,179,179,0.4) 0%, rgba(179,179,179,0) 70%)',
+          border: '1px solid rgba(179,179,179,0.25)',
+          boxShadow: '0 0 12px rgba(179,179,179,0.5)',
+          opacity: 0.25,
+          zIndex: 20,
+        }}
+        title="..."
+        onContextMenu={(e) => e.preventDefault()}
+      />
     </div>
   );
 });

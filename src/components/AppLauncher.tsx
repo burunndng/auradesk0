@@ -132,7 +132,8 @@ const AppLauncher = memo(function AppLauncher() {
         : app.category === activeCategory;
     const matchesFavorites =
       activeCategory !== "Favorites" || dockItems.some((d) => d.appId === app.id && d.isPinned);
-    return matchesSearch && matchesCategory && matchesFavorites;
+    const notHidden = !app.hidden;
+    return matchesSearch && matchesCategory && matchesFavorites && notHidden;
   });
 
   const frequentApps = dockItems

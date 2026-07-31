@@ -1,6 +1,6 @@
 // Music Visualization Renderer
 // High-performance WebGL/Canvas-based audio visualizer
-// Based on ENTHEA-style spectral analysis and fluid dynamics
+// Spectral analysis and fluid dynamics rendering
 
 import { useEffect, useRef, useMemo } from 'react';
 import { useAudioStore } from '@/hooks/useAudioStore';

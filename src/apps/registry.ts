@@ -22,13 +22,27 @@ export const APP_REGISTRY: AppDefinition[] = [
     name: 'BLISS',
     icon: 'Music',
     category: 'Audio',
-    description: 'Browser-based DAW with psychedelic visuals. ENTHEA-inspired visualization and music interface.',
+    description: 'Browser-based DAW with psychedelic visuals — session grid, step sequencer, FX racks, Web Audio API synthesis',
     defaultSize: { width: 1200, height: 800 },
     minSize: { width: 900, height: 600 },
+    singleton: true,
+    url: 'https://ai.studio/apps/b184463c-974f-4811-b29d-65bb33f2804b',
+    embeddable: true,
+    permissions: ['microphone', 'autoplay'],
+  },
+  {
+    id: 'enthea-viz',
+    name: 'ENTHEA-VIZ',
+    icon: 'MusicViz',
+    category: 'Audio',
+    description: 'Audio-reactive music visualization — spectral analysis and fluid dynamics rendering',
+    defaultSize: { width: 1200, height: 780 },
+    minSize: { width: 800, height: 520 },
     singleton: true,
     url: 'https://elder-plinius.github.io/ENTHEA/',
     embeddable: true,
     permissions: ['microphone', 'autoplay'],
+    hidden: true,
   },
   {
     id: 'music-viz',
@@ -54,16 +68,6 @@ export const APP_REGISTRY: AppDefinition[] = [
     singleton: true,
     url: 'https://phoked2.vercel.app/',
     embeddable: true,
-  },
-  {
-    id: 'grimoire',
-    name: 'Grimoire',
-    icon: 'Grimoire',
-    category: 'Productivity',
-    description: 'Sacred note app for AOS & Reality Architect practice',
-    defaultSize: { width: 1024, height: 768 },
-    minSize: { width: 720, height: 520 },
-    singleton: true,
   },
   {
     id: 'notes',
@@ -108,4 +112,4 @@ export const getAppsByCategory = (category: string): AppDefinition[] =>
   APP_REGISTRY.filter((a) => a.category === category);
 
 export const getDefaultDockApps = (): string[] =>
-  ['auraos', 'bliss', 'music-viz', 'reality-architecture', 'grimoire'];
+  ['auraos', 'bliss', 'music-viz', 'reality-architecture'];
