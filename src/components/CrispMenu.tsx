@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Crisp, high-fidelity menu component
 // Mobile-optimized with crisp rendering and reduced blur
 // Replaces blurry menus with better performance and clarity

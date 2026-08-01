@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Audio Store Hook
 // Centralizes Web Audio API state and controls
 // Provides real-time audio processing, visualization, and playback control

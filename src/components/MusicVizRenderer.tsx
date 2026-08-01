@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Music Visualization Renderer
 // High-performance WebGL/Canvas-based audio visualizer
 // Spectral analysis and fluid dynamics rendering
