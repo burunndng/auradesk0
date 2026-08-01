@@ -70,6 +70,18 @@ export const APP_REGISTRY: AppDefinition[] = [
     embeddable: true,
   },
   {
+    id: 'khyzel',
+    name: 'KHYZEL',
+    icon: 'SquareCode',
+    category: 'DevTools',
+    description: 'System Prompt Workbench — author, test, and refine system prompts',
+    defaultSize: { width: 1024, height: 768 },
+    minSize: { width: 640, height: 480 },
+    singleton: true,
+    url: 'https://khyzel-s3rket.kimi.page',
+    embeddable: true,
+  },
+  {
     id: 'notes',
     name: 'Notes',
     icon: 'Feather',
@@ -112,4 +124,4 @@ export const getAppsByCategory = (category: string): AppDefinition[] =>
   APP_REGISTRY.filter((a) => a.category === category);
 
 export const getDefaultDockApps = (): string[] =>
-  ['auraos', 'bliss', 'music-viz', 'reality-architecture'];
+  ['auraos', 'bliss', 'music-viz', 'reality-architecture', 'khyzel'];

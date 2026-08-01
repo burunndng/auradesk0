@@ -9,7 +9,7 @@ import { Search, X } from "lucide-react";
 import { AppIcon as DynamicIcon } from "@/components/AppIcon";
 import { gsap, useGSAP, EASE, DUR, prefersReducedMotion } from "@/lib/gsap";
 
-const CATEGORIES = ["Favorites", "All", "System", "Productivity", "Practice", "Audio"];
+const CATEGORIES = ["Favorites", "All", "System", "Productivity", "Practice", "Audio", "DevTools"];
 
 const AppLauncher = memo(function AppLauncher() {
   const { state, dispatch } = useOS();
