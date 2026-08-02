@@ -26,8 +26,10 @@ export const APP_REGISTRY: AppDefinition[] = [
     defaultSize: { width: 1200, height: 800 },
     minSize: { width: 900, height: 600 },
     singleton: true,
-    url: 'https://ai.studio/apps/b184463c-974f-4811-b29d-65bb33f2804b',
-    embeddable: true,
+    // BLISS's host (AI Studio) blocks in-app iframe embedding (X-Frame-Options),
+    // so it launches in its own browser tab via the local BLISS launch screen.
+    // See src/apps/BLISS/index.tsx.
+    embeddable: false,
     permissions: ['microphone', 'autoplay'],
   },
   {
