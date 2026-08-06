@@ -117,6 +117,18 @@ export const APP_REGISTRY: AppDefinition[] = [
     url: 'https://burunndng.github.io/CoBi4s/',
     embeddable: true,
   },
+  {
+    id: 'liber-777',
+    name: '777',
+    icon: 'Orbit',
+    category: 'Practice',
+    description: 'Liber 777 — modern reference for the 10 Sephiroth of the Tree of Life',
+    defaultSize: { width: 1150, height: 820 },
+    minSize: { width: 720, height: 540 },
+    singleton: true,
+    url: 'https://777-gamma-weld.vercel.app',
+    embeddable: true,
+  },
 ];
 
 export const getAppById = (id: string): AppDefinition | undefined =>
