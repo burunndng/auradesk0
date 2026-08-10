@@ -129,6 +129,20 @@ export const APP_REGISTRY: AppDefinition[] = [
     url: 'https://777-gamma-weld.vercel.app',
     embeddable: true,
   },
+  {
+    id: 'bearings',
+    name: 'Bearings',
+    icon: 'Compass',
+    category: 'Practice',
+    description: 'A place to get your bearings — preparation and reflection for intense experiences',
+    defaultSize: { width: 1100, height: 760 },
+    minSize: { width: 720, height: 520 },
+    singleton: true,
+    // Bearings ships a strict CSP (frame-src 'none'), so it launches in its own
+    // browser tab via the launch screen in src/apps/Bearings/index.tsx.
+    // See src/apps/BLISS/index.tsx for the same pattern.
+    embeddable: false,
+  },
 ];
 
 export const getAppById = (id: string): AppDefinition | undefined =>

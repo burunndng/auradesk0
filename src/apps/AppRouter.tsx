@@ -8,11 +8,13 @@ import AppFrame from '@/components/AppFrame';
 import NotImplemented from '@/components/NotImplemented';
 import AuraOS from '@/apps/AuraOS';
 import BLISS from '@/apps/BLISS';
+import Bearings from '@/apps/Bearings';
 import Notes from '@/apps/Notes';
 
 const LOCAL_APPS: Record<string, FC> = {
   auraos: AuraOS,
   bliss: BLISS,
+  bearings: Bearings,
   notes: Notes,
 };
 

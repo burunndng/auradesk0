@@ -44,6 +44,7 @@ const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'desk-khyzel', name: 'KHYZEL', icon: 'SquareCode', appId: 'khyzel', position: { x: 16, y: 376 }, isSelected: false },
   { id: 'desk-ghostshare', name: 'GhostShare', icon: 'Globe', appId: 'ghostshare', position: { x: 16, y: 466 }, isSelected: false },
   { id: 'desk-cognibias', name: 'CogniBias', icon: 'Brain', appId: 'cognibias', position: { x: 16, y: 556 }, isSelected: false },
+  { id: 'desk-bearings', name: 'Bearings', icon: 'Compass', appId: 'bearings', position: { x: 16, y: 646 }, isSelected: false },
 ];
 
 const createInitialDockItems = (): DockItem[] => {
